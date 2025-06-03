@@ -14,6 +14,7 @@ namespace IBussines
 
         Task<(List<VentaResponse>, int)> GetVentaPaginados(int page, int pageSize);
 
-        
+        Task<(int totalComprobantes, decimal totalComprobantesMonto)> ObtenerResumenVentasAsync();
+        Task<List<IngresoMensualResponse>> ObtenerIngresosPorMes(int mes);
     }
 }

@@ -154,6 +154,25 @@ namespace API.Controllers
             }
         }
 
+        [HttpGet("resumen-ventas")]
+        public async Task<IActionResult> ObtenerResumenVentas()
+        {
+            var (totalComprobantes, totalComprobantesMonto) = await _IVentaBussines.ObtenerResumenVentasAsync();
+
+            return Ok(new
+            {
+                TotalComprobantesEmitidos = totalComprobantes,
+                MontoTotalComprobantes = $"S/ {totalComprobantesMonto:N2}",
+            });
+        }
+
+        [HttpGet("ingresos-por-mes")]
+        public async Task<IActionResult> ObtenerIngresosPorMes([FromQuery] int mes)
+        {
+            var ingresos = await _IVentaBussines.ObtenerIngresosPorMes(mes);
+            return Ok(ingresos);
+        }
+
         #endregion
     }
 }

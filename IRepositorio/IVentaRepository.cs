@@ -1,4 +1,5 @@
 ﻿using DBModel.DB;
+using Models.RequestResponse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,5 +17,7 @@ namespace IRepository
         Task<string> ObtenerUltimoNumeroComprobante();
         Task<IEnumerable<Venta>> ObtenerVentasPorFechaAsync(DateTime fechaInicio, DateTime fechaFin);
         Task<(List<Venta>, int)> GetVentaPaginados(int page, int pageSize);
+        Task<(int totalComprobantes, decimal montoTotalComprobantes)> ObtenerResumenDashboardAsync();
+        Task<List<IngresoMensualResponse>> ObtenerIngresosPorMes(int mes);
     }
 }

@@ -104,5 +104,9 @@ namespace Bussines
         {
             return await _IDetalleVentaRepository.GetDetalleVentasByPersonaId(idPersona);
         }
+        public async Task<List<ProductosMasVendidosResponse>> ObtenerProductosMasVendidosAsync(int mes, int anio)
+        {
+            return await _IDetalleVentaRepository.ObtenerProductosMasVendidosAsync(mes, anio);
+        }
     }
 }

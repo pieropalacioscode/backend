@@ -2,6 +2,7 @@
 using DocumentFormat.OpenXml.InkML;
 using IRepository;
 using Microsoft.EntityFrameworkCore;
+using Models.RequestResponse;
 using Repository.Generic;
 using System;
 using System.Collections.Generic;
@@ -81,9 +82,66 @@ namespace Repository
         }
 
 
-       
+        public async Task<(int totalComprobantes, decimal montoTotalComprobantes)> ObtenerResumenDashboardAsync()
+        {
+            var ventas = await dbSet
+                .Where(v => v.TipoComprobante != null &&
+                            (v.TipoComprobante.ToLower() == "boleta" || v.TipoComprobante.ToLower() == "factura"))
+                .ToListAsync();
+
+            var totalComprobantes = ventas.Count;
+            var montoTotalComprobantes = ventas.Sum(v => v.TotalPrecio ?? 0);
+
+            return (totalComprobantes, montoTotalComprobantes);
+        }
 
 
+        public async Task<List<IngresoMensualResponse>> ObtenerIngresosPorMes(int mes)
+        {
+            var anioActual = DateTime.Now.Year;
+            var fechaInicio = new DateTime(anioActual, mes, 1);
+            var fechaFin = fechaInicio.AddMonths(1).AddDays(-1); // último día del mes
+
+            const string query = @"
+        SELECT 
+            FORMAT(v.Fecha_Venta, 'yyyy-MM') AS MesAño,
+            SUM(d.Importe) AS TotalIngresos
+        FROM Ventas v
+        INNER JOIN Detalle_Ventas d ON v.Id_Ventas = d.id_Ventas
+        WHERE v.Fecha_Venta BETWEEN @fechaInicio AND @fechaFin
+        GROUP BY FORMAT(v.Fecha_Venta, 'yyyy-MM')
+        ORDER BY MesAño";
+
+            var ingresosMensuales = new List<IngresoMensualResponse>();
+
+            await using var connection = db.Database.GetDbConnection();
+            await connection.OpenAsync();
+
+            await using var command = connection.CreateCommand();
+            command.CommandText = query;
+
+            var paramInicio = command.CreateParameter();
+            paramInicio.ParameterName = "@fechaInicio";
+            paramInicio.Value = fechaInicio;
+            command.Parameters.Add(paramInicio);
+
+            var paramFin = command.CreateParameter();
+            paramFin.ParameterName = "@fechaFin";
+            paramFin.Value = fechaFin;
+            command.Parameters.Add(paramFin);
+
+            await using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                ingresosMensuales.Add(new IngresoMensualResponse
+                {
+                    MesAño = reader.GetString(0),
+                    TotalIngresos = reader.GetDecimal(1)
+                });
+            }
+
+            return ingresosMensuales;
+        }
 
     }
 }

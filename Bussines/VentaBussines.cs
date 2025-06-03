@@ -24,7 +24,7 @@ namespace Bussines
         #endregion
 
         #region constructor 
-        public VentaBussines(IMapper mapper,IEmailService emailService)
+        public VentaBussines(IMapper mapper, IEmailService emailService)
         {
             _Mapper = mapper;
             _IVentaRepository = new VentaRepository();
@@ -188,6 +188,14 @@ namespace Bussines
             return (ventaResponse, totalItems);
         }
 
+        public async Task<(int totalComprobantes, decimal totalComprobantesMonto)> ObtenerResumenVentasAsync()
+        {
+            return await _IVentaRepository.ObtenerResumenDashboardAsync();
+        }
+        public async Task<List<IngresoMensualResponse>> ObtenerIngresosPorMes(int mes)
+        {
+            return await _IVentaRepository.ObtenerIngresosPorMes(mes);
+        }
 
     }
 }
