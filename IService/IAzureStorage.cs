@@ -9,6 +9,6 @@ namespace IService
 {
     public interface IAzureStorage
     {
-        //Task<string> SaveFile(string containerName, IFormFile file);
+        Task<string> SaveFile(string containerName, IFormFile file);
     }
 }

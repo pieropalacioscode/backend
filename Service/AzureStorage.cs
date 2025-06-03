@@ -15,30 +15,30 @@ namespace Service
     {
         private readonly BlobServiceClient _blobServiceClient;
 
-        //public AzureStorage(IConfiguration configuration)
-        //{
-        //    string connectionString = configuration.GetConnectionString("AzureStorage");
-        //    _blobServiceClient = new BlobServiceClient(connectionString);
-        //}
+        public AzureStorage(IConfiguration configuration)
+        {
+            string connectionString = configuration.GetConnectionString("AzureStorage");
+            _blobServiceClient = new BlobServiceClient(connectionString);
+        }
 
-        //public async Task<string> SaveFile(string containerName, IFormFile file)
-        //{
-        //    // Crear un cliente de contenedor Blob
-        //    var blobContainerClient = _blobServiceClient.GetBlobContainerClient("imagenes");
-        //    await blobContainerClient.CreateIfNotExistsAsync();
+        public async Task<string> SaveFile(string containerName, IFormFile file)
+        {
+            // Crear un cliente de contenedor Blob
+            var blobContainerClient = _blobServiceClient.GetBlobContainerClient("imagenes");
+            await blobContainerClient.CreateIfNotExistsAsync();
 
-        //    // Generar un nombre único para el archivo
-        //    var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+            // Generar un nombre único para el archivo
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
 
-        //    // Subir archivo al contenedor
-        //    var blobClient = blobContainerClient.GetBlobClient(fileName);
-        //    using (var stream = file.OpenReadStream())
-        //    {
-        //        await blobClient.UploadAsync(stream, true);
-        //    }
+            // Subir archivo al contenedor
+            var blobClient = blobContainerClient.GetBlobClient(fileName);
+            using (var stream = file.OpenReadStream())
+            {
+                await blobClient.UploadAsync(stream, true);
+            }
 
-        //    // Devolver la URL de la imagen
-        //    return blobClient.Uri.AbsoluteUri;
-        //}
+            // Devolver la URL de la imagen
+            return blobClient.Uri.AbsoluteUri;
+        }
     }
 }
