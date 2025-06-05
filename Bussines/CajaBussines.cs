@@ -85,37 +85,20 @@ namespace Bussines
 
         public CajaResponse Update(CajaRequest entity)
         {
-            // Obtener la caja actual de la base de datos
-            Caja cajaActual = _ICajaRepository.GetById(entity.IdCaja);
+            // Mapear CajaRequest a Caja (entidad)
+            Caja cajaToUpdate = _Mapper.Map<Caja>(entity);
 
-            if (cajaActual == null)
-            {
-                throw new Exception("Caja no encontrada.");
-            }
+            // Llamar al método Update del repositorio
+            Caja updatedCaja = _ICajaRepository.Update(cajaToUpdate);
 
-            // Mapear los nuevos datos al objeto existente (sin perder campos anteriores)
-            cajaActual.SaldoInicial = entity.SaldoInicial;
-            cajaActual.SaldoDigital = entity.SaldoDigital;
-            cajaActual.IngresosACaja = entity.IngresosACaja;
-            cajaActual.Fecha = entity.Fecha;
-            cajaActual.FechaCierre = entity.FechaCierre;
-
-            // Acumular el retiro de caja
-            if (entity.RetiroDeCaja != 0)
-            {
-                cajaActual.RetiroDeCaja += entity.RetiroDeCaja;
-                cajaActual.SaldoFinal -= entity.RetiroDeCaja;
-            }
-
-            // Actualizar caja en base de datos
-            Caja updatedCaja = _ICajaRepository.Update(cajaActual);
-
+            // Comprobar si la caja se ha actualizado correctamente
             if (updatedCaja == null)
             {
-                throw new Exception("No se pudo actualizar la caja.");
+                // Manejar el caso en que la caja no se actualizó correctamente
+                // Puedes lanzar una excepción o devolver un valor que indique el fallo
             }
 
-            // Mapear a response
+            // Mapear la caja actualizada de nuevo a CajaResponse
             CajaResponse res = _Mapper.Map<CajaResponse>(updatedCaja);
             return res;
         }

@@ -197,5 +197,10 @@ namespace Bussines
             return await _IVentaRepository.ObtenerIngresosPorMes(mes);
         }
 
+        public async Task<List<TasaRotacionResponse>> ObtenerTasaRotacionInventario(string filtro, int offset, int limit)
+        {
+            return await _IVentaRepository.ObtenerTasaRotacionInventario(filtro, offset, limit);
+        }
+
     }
 }

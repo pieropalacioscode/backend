@@ -89,6 +89,9 @@ namespace UtilMapper
             CreateMap<DetalleVentaResponse, DetalleVentaRequest>();
             //CreateMap<CajaResponse, CajaRequest>();
 
+            CreateMap<RetiroDeCajaRequest, RetiroDeCaja>();
+            CreateMap<RetiroDeCaja, RetiroDeCajaResponse>();
+
         }
 
     }

@@ -35,9 +35,5 @@ namespace Repository
             return dbSet.FirstOrDefault(c => c.Fecha.HasValue && c.Fecha.Value.Date == date.Date);
         }
 
-
-       
-
-
     }
 }

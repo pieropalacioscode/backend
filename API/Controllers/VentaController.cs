@@ -173,6 +173,20 @@ namespace API.Controllers
             return Ok(ingresos);
         }
 
+        [HttpGet("tasaRotacion")]
+        public async Task<IActionResult> ObtenerTasaRotacionInventario(
+            [FromQuery] string filtro ,
+            [FromQuery] int offset = 0,
+            [FromQuery] int limit = 10)
+        {
+            var tasa = await _IVentaBussines.ObtenerTasaRotacionInventario(filtro, offset, limit);
+            return Ok(new
+            {
+                Tasa = tasa
+            });
+        }
+
+
         #endregion
     }
 }

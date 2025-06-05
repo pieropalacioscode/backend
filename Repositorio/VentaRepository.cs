@@ -143,5 +143,69 @@ namespace Repository
             return ingresosMensuales;
         }
 
+
+        public async Task<List<TasaRotacionResponse>> ObtenerTasaRotacionInventario(string filtro, int offset, int limit)
+        {
+            string orderByClause = filtro.ToLower() switch
+            {
+                "tasa" => "TasaRotacionAprox DESC",
+                "total" => "TotalVendidos DESC",
+                _ => "TotalVendidos DESC"
+            };
+
+            string query = $@"
+SELECT 
+    l.IdLibro,
+    l.Titulo,
+    ISNULL(SUM(d.Cantidad), 0) AS TotalVendidos,
+    k.Stock AS StockActual,
+    CASE 
+        WHEN (k.Stock + ISNULL(SUM(d.Cantidad), 0)) = 0 THEN 0
+        ELSE CAST(ISNULL(SUM(d.Cantidad), 0) AS FLOAT) / 
+             ((k.Stock + ISNULL(SUM(d.Cantidad), 0)) / 2.0)
+    END AS TasaRotacionAprox
+FROM Libro l
+JOIN Kardex k ON l.IdLibro = k.IdLibro
+LEFT JOIN Detalle_Ventas d ON l.IdLibro = d.IdLibro
+GROUP BY l.IdLibro, l.Titulo, k.Stock
+ORDER BY " + orderByClause + @"
+OFFSET @offset ROWS
+FETCH NEXT @limit ROWS ONLY;";
+
+            using var connection = db.Database.GetDbConnection();
+            await connection.OpenAsync();
+            using var command = connection.CreateCommand();
+            command.CommandText = query;
+
+            var paramOffset = command.CreateParameter();
+            paramOffset.ParameterName = "@offset";
+            paramOffset.Value = offset;
+            command.Parameters.Add(paramOffset);
+
+            var paramLimit = command.CreateParameter();
+            paramLimit.ParameterName = "@limit";
+            paramLimit.Value = limit;
+            command.Parameters.Add(paramLimit);
+
+            using var reader = await command.ExecuteReaderAsync();
+            var resultado = new List<TasaRotacionResponse>();
+
+            while (await reader.ReadAsync())
+            {
+                resultado.Add(new TasaRotacionResponse
+                {
+                    IdLibro = reader.GetInt32(0),
+                    Titulo = reader.GetString(1),
+                    StockInicial = reader.GetInt32(3),
+                    TotalVendido = reader.GetInt32(2),
+                    TasaRotacion = Math.Round(reader.GetDouble(4), 2)
+                });
+            }
+
+            return resultado;
+        }
+
+
+
     }
 }

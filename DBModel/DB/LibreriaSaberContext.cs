@@ -47,6 +47,8 @@ public partial class LibreriaSaberContext : DbContext
 
     public virtual DbSet<PublicoObjetivo> PublicoObjetivos { get; set; }
 
+    public virtual DbSet<RetiroDeCaja> RetiroDeCajas { get; set; }
+
     public virtual DbSet<Subcategoria> Subcategorias { get; set; }
 
     public virtual DbSet<Sucursal> Sucursals { get; set; }
@@ -65,7 +67,7 @@ public partial class LibreriaSaberContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=DESKTOP-OALSKTM\\SQLEXPRESS;Initial Catalog=Libreria_Saber;Integrated Security=True;Trust Server Certificate=True");
+        => optionsBuilder.UseSqlServer("Data Source=DESKTOP-OALSKTM\\SQLEXPRESS;Initial Catalog=Libreria_Saber;Integrated Security=True;Encrypt=True;Trust Server Certificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -101,9 +103,6 @@ public partial class LibreriaSaberContext : DbContext
             entity.Property(e => e.IngresosACaja)
                 .HasColumnType("money")
                 .HasColumnName("Ingresos_a_CAja");
-            entity.Property(e => e.RetiroDeCaja)
-                .HasColumnType("money")
-                .HasColumnName("Retiro_de_Caja");
             entity.Property(e => e.SaldoDigital)
                 .HasColumnType("money")
                 .HasColumnName("saldoDigital");
@@ -443,6 +442,24 @@ public partial class LibreriaSaberContext : DbContext
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Descripcion).IsUnicode(false);
+        });
+
+        modelBuilder.Entity<RetiroDeCaja>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Retiro_d__3214EC0754539B14");
+
+            entity.ToTable("Retiro_de_Caja");
+
+            entity.Property(e => e.Descripcion).HasMaxLength(255);
+            entity.Property(e => e.Fecha)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.MontoDigital).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.MontoEfectivo).HasColumnType("decimal(10, 2)");
+
+            entity.HasOne(d => d.Caja).WithMany(p => p.RetiroDeCajas)
+                .HasForeignKey(d => d.CajaId)
+                .HasConstraintName("FK_RetiroCaja_Caja");
         });
 
         modelBuilder.Entity<Subcategoria>(entity =>

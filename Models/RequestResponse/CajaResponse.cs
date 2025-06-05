@@ -16,9 +16,6 @@ namespace Models.RequestResponse
 
         public DateTime? Fecha { get; set; }
 
-
-        public decimal? RetiroDeCaja { get; set; }
-
         public decimal? IngresosACaja { get; set; }
 
         public DateTime? FechaCierre { get; set; }
