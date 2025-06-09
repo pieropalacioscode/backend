@@ -9,6 +9,7 @@ namespace IBussines
         Task<List<DetalleVenta>> GetDetalleVentaByVentaId(int idVenta);
         Task<MemoryStream> CreateVentaPdf(int idVenta);
         Task GenerarYEnviarPdfDeVenta(int idVenta, string emailCliente);
+        Task<string> GeneraNumeroComprobante(DatalleCarrito datalle);
         Task<string> GenerarNumeroComprobante();
         Task<IEnumerable<VentaRequest>> ObtenerVentasPorFechaAsync(DateTime fechaInicio, DateTime fechaFin);
 

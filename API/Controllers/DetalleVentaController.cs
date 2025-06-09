@@ -221,6 +221,7 @@ namespace API.Controllers
             // Buscar o registrar persona
             var personaExistente = _IPersonaBussines.GetPersonaByDocumento(detalleCarrito.Persona.NumeroDocumento);
             int idPersona;
+            
 
             if (personaExistente == null)
             {
@@ -270,14 +271,15 @@ namespace API.Controllers
                 };
                 listaDetalle.Add(detalle);
             }
-
+            string numeroComprobante = await _IVentaBussines.GeneraNumeroComprobante(detalleCarrito);
             // Crear la venta
             var ventaRequest = new VentaRequest
             {
+
                 FechaVenta = DateTime.Now,
                 TipoComprobante = detalleCarrito.tipoComprobante,
                 IdUsuario = 1,
-                NroComprobante = "FAC00",
+                NroComprobante = numeroComprobante,
                 IdPersona = idPersona,
                 IdCaja = cajaDelDia.IdCaja,
                 TotalPrecio = totalVenta,

@@ -153,9 +153,17 @@ namespace Bussines
                 $"BoletaVenta_{idVenta}.pdf"
             );
         }
-        public async Task<string> GenerarNumeroComprobante()
+        public async Task<string> GeneraNumeroComprobante(DatalleCarrito datalle)
         {
-            string ultimoComprobante = await _IVentaRepository.ObtenerUltimoNumeroComprobante();
+            string prefijo = datalle.tipoComprobante?.ToUpper() switch
+            {
+                "BOLETA" => "BOL",
+                "FACTURA" => "FAC",
+                "NOTA" => "NOT",
+                _ => throw new ArgumentException("Tipo de comprobante no válido.")
+            };
+
+            string ultimoComprobante = await _IVentaRepository.ObtenerUltimoNumeroComprobantePorTipo(prefijo);
 
             int numeroActual = 0;
             if (ultimoComprobante != null)
@@ -163,7 +171,7 @@ namespace Bussines
                 int.TryParse(ultimoComprobante.Substring(3), out numeroActual);
             }
             numeroActual++;
-            return $"BOL{numeroActual.ToString("D4")}";
+            return $"{prefijo}{numeroActual.ToString("D4")}";
         }
         public async Task<IEnumerable<VentaRequest>> ObtenerVentasPorFechaAsync(DateTime fechaInicio, DateTime fechaFin)
         {
@@ -177,7 +185,8 @@ namespace Bussines
                 FechaVenta = v.FechaVenta,
                 NroComprobante = v.NroComprobante,
                 IdPersona = v.IdPersona,
-                IdUsuario = v.IdUsuario
+                IdUsuario = v.IdUsuario,
+                TipoPago = v.TipoPago,
             });
         }
 
@@ -202,5 +211,9 @@ namespace Bussines
             return await _IVentaRepository.ObtenerTasaRotacionInventario(filtro, offset, limit);
         }
 
+        public Task<string> GenerarNumeroComprobante()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

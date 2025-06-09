@@ -53,15 +53,17 @@ namespace Repository
             return venta?.IdPersonaNavigation;
         }
 
-        public async Task<string> ObtenerUltimoNumeroComprobante()
+        public async Task<string> ObtenerUltimoNumeroComprobantePorTipo(string prefijo)
         {
             var ultimoComprobante = await db.Ventas
-                        .OrderByDescending(v => v.FechaVenta)
-                        .Select(v => v.NroComprobante)
-                        .FirstOrDefaultAsync();
+                .Where(v => v.NroComprobante.StartsWith(prefijo)) // Filtra por prefijo
+                .OrderByDescending(v => v.FechaVenta)
+                .Select(v => v.NroComprobante)
+                .FirstOrDefaultAsync();
 
             return ultimoComprobante;
         }
+
 
 
         public async Task<IEnumerable<Venta>> ObtenerVentasPorFechaAsync(DateTime fechaInicio, DateTime fechaFin)
