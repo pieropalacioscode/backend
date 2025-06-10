@@ -80,6 +80,13 @@ builder.Services.AddScoped<IPersonaBussines, PersonaBussines>();
 builder.Services.AddScoped<ICajaBussines, CajaBussines>();
 builder.Services.AddScoped<ICajaRepository, CajaRepository>();
 builder.Services.AddScoped<IRetiroDeCajaBussines, RetiroDeCajaBussines>();
+builder.Services.AddScoped<IPedidoProveedorBussines, PedidoProveedorBussines>();
+builder.Services.AddScoped<IDetallePedidoProveedorBussines, DetallePedidoProveedorBussines>();
+
+builder.Services.AddScoped<IPedidoProveedorRepository, PedidoProveedorRepository>();
+builder.Services.AddScoped<IDetallePedidoProveedorRepository, DetallePedidoProveedorRepository>();
+
+
 
 
 

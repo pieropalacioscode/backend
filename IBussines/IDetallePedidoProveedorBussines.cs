@@ -8,7 +8,7 @@ using UtilInterface;
 
 namespace IBussines
 {
-    public interface ITipoDocEntradaBussines: ICRUDBussnies<TipoDocEntradaRequest, TipoDocEntradaResponse>
+    public interface IDetallePedidoProveedorBussines : ICRUDBussnies<DetallePedidoProveedorRequest,DetallePedidoProveedorResponse>
     {
     }
 }

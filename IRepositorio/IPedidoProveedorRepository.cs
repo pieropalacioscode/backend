@@ -8,7 +8,7 @@ using UtilInterface;
 
 namespace IRepository
 {
-    public interface IDocEntradaRepository : ICRUDRepositorio<DocEntrada>
+    public interface IPedidoProveedorRepository : ICRUDRepositorio<PedidoProveedor>
     {
     }
 }

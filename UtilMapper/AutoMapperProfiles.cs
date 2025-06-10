@@ -43,8 +43,7 @@ namespace UtilMapper
             CreateMap<Caja, CajaRequest>().ReverseMap();
             CreateMap<Caja,CajaResponse>().ReverseMap();
 
-            CreateMap<DetalleDocEntrada,DetalleDocEntradaRequest>().ReverseMap();
-            CreateMap<DetalleDocEntrada,DetalleDocEntradaResponse>().ReverseMap();
+
 
             CreateMap<DetalleDocSalida,DetalleDocSalidaRequest>().ReverseMap();
             CreateMap<DetalleDocSalida,DetalleDocSalidaResponse>().ReverseMap();
@@ -52,8 +51,6 @@ namespace UtilMapper
             CreateMap<DetalleVenta,DetalleVentaRequest>().ReverseMap();
             CreateMap<DetalleVenta,DetalleVentaResponse>().ReverseMap();
 
-            CreateMap<DocEntrada, DocEntradaRequest>().ReverseMap();
-            CreateMap<DocEntrada ,  DocEntradaResponse>().ReverseMap();
 
             CreateMap< DocSalida, DocSalidaRequest>().ReverseMap();
             CreateMap<DocSalida,  DocSalidaResponse>().ReverseMap();    
@@ -69,9 +66,6 @@ namespace UtilMapper
 
             CreateMap<Sucursal, SucursalRequest>().ReverseMap();
             CreateMap<Sucursal , SucursalResponse>().ReverseMap();
-
-            CreateMap<TipoDocEntrada, TipoDocEntradaRequest>().ReverseMap();
-            CreateMap<TipoDocEntrada, TipoDocEntradaRequest>().ReverseMap();
 
             CreateMap<TipoDocSalida,TipoDocSalidaRequest>().ReverseMap();
             CreateMap<TipoDocSalida,TipoDocSalidaResponse>().ReverseMap();
@@ -92,6 +86,11 @@ namespace UtilMapper
             CreateMap<RetiroDeCajaRequest, RetiroDeCaja>();
             CreateMap<RetiroDeCaja, RetiroDeCajaResponse>();
 
+            CreateMap<PedidoProveedor,PedidoProveedorRequest>().ReverseMap();
+            CreateMap<PedidoProveedor,PedidoProveedorResponse>().ReverseMap();
+
+            CreateMap<DetallePedidoProveedor, DetallePedidoProveedorRequest>().ReverseMap();
+            CreateMap<DetallePedidoProveedor, DetallePedidoProveedorResponse>().ReverseMap();
         }
 
     }

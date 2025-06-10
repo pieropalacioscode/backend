@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace Repository
 {
-    public class DocEntradaRepository : GenericRepository<DocEntrada>, IDocEntradaRepository
+    public class PedidoProveedorRepository : GenericRepository<PedidoProveedor>, IPedidoProveedorRepository
     {
-        public List<DocEntrada> GetAutoComplete(string query)
+        public List<PedidoProveedor> GetAutoComplete(string query)
         {
             throw new NotImplementedException();
         }

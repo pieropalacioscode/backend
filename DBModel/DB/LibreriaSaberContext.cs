@@ -23,13 +23,11 @@ public partial class LibreriaSaberContext : DbContext
 
     public virtual DbSet<DatosGenerale> DatosGenerales { get; set; }
 
-    public virtual DbSet<DetalleDocEntrada> DetalleDocEntradas { get; set; }
-
     public virtual DbSet<DetalleDocSalida> DetalleDocSalidas { get; set; }
 
-    public virtual DbSet<DetalleVenta> DetalleVentas { get; set; }
+    public virtual DbSet<DetallePedidoProveedor> DetallePedidoProveedors { get; set; }
 
-    public virtual DbSet<DocEntrada> DocEntradas { get; set; }
+    public virtual DbSet<DetalleVenta> DetalleVentas { get; set; }
 
     public virtual DbSet<DocSalida> DocSalidas { get; set; }
 
@@ -38,6 +36,8 @@ public partial class LibreriaSaberContext : DbContext
     public virtual DbSet<Libro> Libros { get; set; }
 
     public virtual DbSet<LibroAutor> LibroAutors { get; set; }
+
+    public virtual DbSet<PedidoProveedor> PedidoProveedors { get; set; }
 
     public virtual DbSet<Persona> Personas { get; set; }
 
@@ -52,8 +52,6 @@ public partial class LibreriaSaberContext : DbContext
     public virtual DbSet<Subcategoria> Subcategorias { get; set; }
 
     public virtual DbSet<Sucursal> Sucursals { get; set; }
-
-    public virtual DbSet<TipoDocEntrada> TipoDocEntradas { get; set; }
 
     public virtual DbSet<TipoDocSalida> TipoDocSalidas { get; set; }
 
@@ -143,25 +141,6 @@ public partial class LibreriaSaberContext : DbContext
                 .HasColumnName("Telefono_Contacto");
         });
 
-        modelBuilder.Entity<DetalleDocEntrada>(entity =>
-        {
-            entity.HasKey(e => e.IdDetalleDocEntrada).HasName("PK__DetalleD__8B1294F4A29CF311");
-
-            entity.Property(e => e.IdDocEntrada).HasColumnName("IdDoc_Entrada");
-            entity.Property(e => e.PorcentajeUtil).HasColumnType("decimal(5, 2)");
-            entity.Property(e => e.PrecioCosto).HasColumnType("money");
-
-            entity.HasOne(d => d.IdDocEntradaNavigation).WithMany(p => p.DetalleDocEntrada)
-                .HasForeignKey(d => d.IdDocEntrada)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_DetalleDocEntrada_DocEntrada");
-
-            entity.HasOne(d => d.IdLibroNavigation).WithMany(p => p.DetalleDocEntrada)
-                .HasForeignKey(d => d.IdLibro)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_DetalleDocEntrada_Libro");
-        });
-
         modelBuilder.Entity<DetalleDocSalida>(entity =>
         {
             entity.HasKey(e => e.IdDetalleSalida).HasName("PK__Detalle___B5F901B225CFDEEF");
@@ -181,6 +160,25 @@ public partial class LibreriaSaberContext : DbContext
                 .HasForeignKey(d => d.IdLibro)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_DetalleDocSalida_Libro");
+        });
+
+        modelBuilder.Entity<DetallePedidoProveedor>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__DetalleP__3214EC0725001D4F");
+
+            entity.ToTable("DetallePedidoProveedor");
+
+            entity.Property(e => e.PrecioUnitario).HasColumnType("decimal(10, 2)");
+
+            entity.HasOne(d => d.IdLibroNavigation).WithMany(p => p.DetallePedidoProveedors)
+                .HasForeignKey(d => d.IdLibro)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__DetallePe__IdLib__367C1819");
+
+            entity.HasOne(d => d.IdPedidoProveedorNavigation).WithMany(p => p.DetallePedidoProveedors)
+                .HasForeignKey(d => d.IdPedidoProveedor)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__DetallePe__IdPed__3587F3E0");
         });
 
         modelBuilder.Entity<DetalleVenta>(entity =>
@@ -215,36 +213,6 @@ public partial class LibreriaSaberContext : DbContext
             entity.HasOne(d => d.IdVentasNavigation).WithMany(p => p.DetalleVenta)
                 .HasForeignKey(d => d.IdVentas)
                 .HasConstraintName("FK_detalle_ventas_ventas");
-        });
-
-        modelBuilder.Entity<DocEntrada>(entity =>
-        {
-            entity.HasKey(e => e.IdDocEntrada).HasName("PK__Doc_Entr__A667F4C73330EB16");
-
-            entity.ToTable("Doc_Entradas");
-
-            entity.Property(e => e.IdDocEntrada).HasColumnName("IdDoc_Entrada");
-            entity.Property(e => e.Fecha).HasColumnType("datetime");
-            entity.Property(e => e.IdProveedor).HasColumnName("Id_Proveedor");
-            entity.Property(e => e.IdSucursal).HasColumnName("Id_Sucursal");
-            entity.Property(e => e.NroDocEntrada)
-                .HasMaxLength(200)
-                .IsUnicode(false);
-
-            entity.HasOne(d => d.IdProveedorNavigation).WithMany(p => p.DocEntrada)
-                .HasForeignKey(d => d.IdProveedor)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_DocEntrada_Proveedor");
-
-            entity.HasOne(d => d.IdSucursalNavigation).WithMany(p => p.DocEntrada)
-                .HasForeignKey(d => d.IdSucursal)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_DocEntrada_Sucursal");
-
-            entity.HasOne(d => d.IdTipoDocEntradaNavigation).WithMany(p => p.DocEntrada)
-                .HasForeignKey(d => d.IdTipoDocEntrada)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_DocEntrada_TipoDocEntrada");
         });
 
         modelBuilder.Entity<DocSalida>(entity =>
@@ -350,6 +318,23 @@ public partial class LibreriaSaberContext : DbContext
                 .HasForeignKey(d => d.IdLibro)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_LibroAutor_Libro");
+        });
+
+        modelBuilder.Entity<PedidoProveedor>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__PedidoPr__3214EC079EEBF816");
+
+            entity.ToTable("PedidoProveedor");
+
+            entity.Property(e => e.DescripcionPedido).IsUnicode(false);
+            entity.Property(e => e.DescripcionRecepcion).IsUnicode(false);
+            entity.Property(e => e.Estado).HasMaxLength(20);
+            entity.Property(e => e.Fecha).HasColumnType("datetime");
+
+            entity.HasOne(d => d.IdProveedorNavigation).WithMany(p => p.PedidoProveedors)
+                .HasForeignKey(d => d.IdProveedor)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__PedidoPro__IdPro__32AB8735");
         });
 
         modelBuilder.Entity<Persona>(entity =>
@@ -488,15 +473,6 @@ public partial class LibreriaSaberContext : DbContext
 
             entity.Property(e => e.IdSucursal).HasColumnName("Id_Sucursal");
             entity.Property(e => e.Ubicacion)
-                .HasMaxLength(200)
-                .IsUnicode(false);
-        });
-
-        modelBuilder.Entity<TipoDocEntrada>(entity =>
-        {
-            entity.HasKey(e => e.IdTipoDocEntrada).HasName("PK__TipoDocE__570697843153C09F");
-
-            entity.Property(e => e.Descripcion)
                 .HasMaxLength(200)
                 .IsUnicode(false);
         });

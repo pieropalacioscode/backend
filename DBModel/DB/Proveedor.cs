@@ -16,9 +16,9 @@ public partial class Proveedor
 
     public int IdTipoProveedor { get; set; }
 
-    public virtual ICollection<DocEntrada> DocEntrada { get; set; } = new List<DocEntrada>();
-    [JsonIgnore]
     public virtual TipoProveedor IdTipoProveedorNavigation { get; set; } = null!;
     [JsonIgnore]
     public virtual ICollection<Libro> Libros { get; set; } = new List<Libro>();
+    [JsonIgnore]
+    public virtual ICollection<PedidoProveedor> PedidoProveedors { get; set; } = new List<PedidoProveedor>();
 }

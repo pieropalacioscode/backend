@@ -1,27 +1,26 @@
 ﻿using AutoMapper;
 using Bussines;
 using IBussines;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models.RequestResponse;
 
 namespace API.Controllers
 {
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
-
-    //[Authorize]
-    public class DocEntradaController : ControllerBase
+    public class DetallePedidoProveedorController : ControllerBase
     {
         #region Declaracion de vcariables generales
-        public readonly IDocEntradaBussines _IDocEntradaBussines = null;
+        public readonly IDetallePedidoProveedorBussines _IDetallePedidoProveedorBussines = null;
         public readonly IMapper _Mapper;
         #endregion
 
         #region constructor 
-        public DocEntradaController(IMapper mapper)
+        public DetallePedidoProveedorController(IMapper mapper)
         {
             _Mapper = mapper;
-            _IDocEntradaBussines = new DocEntradaBussines(_Mapper);
+            _IDetallePedidoProveedorBussines = new DetallePedidoProveedorBussines(_Mapper);
         }
         #endregion
 
@@ -33,7 +32,7 @@ namespace API.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            List<DocEntradaResponse> lsl = _IDocEntradaBussines.getAll();
+            List<DetallePedidoProveedorResponse> lsl = _IDetallePedidoProveedorBussines.getAll();
             return Ok(lsl);
         }
 
@@ -45,7 +44,7 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            DocEntradaResponse res = _IDocEntradaBussines.getById(id);
+            DetallePedidoProveedorResponse res = _IDetallePedidoProveedorBussines.getById(id);
             return Ok(res);
         }
 
@@ -55,9 +54,9 @@ namespace API.Controllers
         /// <param name="request">Registro a insertar</param>
         /// <returns>Retorna el registro insertado</returns>
         [HttpPost]
-        public IActionResult Create([FromBody] DocEntradaRequest request)
+        public IActionResult Create([FromBody] DetallePedidoProveedorRequest request)
         {
-            DocEntradaResponse res = _IDocEntradaBussines.Create(request);
+            DetallePedidoProveedorResponse res = _IDetallePedidoProveedorBussines.Create(request);
             return Ok(res);
         }
 
@@ -67,9 +66,9 @@ namespace API.Controllers
         /// <param name="entity">registro a actualizar</param>
         /// <returns>retorna el registro Actualiza</returns>
         [HttpPut]
-        public IActionResult Update([FromBody] DocEntradaRequest request)
+        public IActionResult Update([FromBody] DetallePedidoProveedorRequest request)
         {
-            DocEntradaResponse res = _IDocEntradaBussines.Update(request);
+            DetallePedidoProveedorResponse res = _IDetallePedidoProveedorBussines.Update(request);
             return Ok(res);
         }
 
@@ -81,7 +80,7 @@ namespace API.Controllers
         [HttpDelete("{id}")]
         public IActionResult delete(int id)
         {
-            int res = _IDocEntradaBussines.Delete(id);
+            int res = _IDetallePedidoProveedorBussines.Delete(id);
             return Ok(res);
         }
         #endregion
