@@ -1,6 +1,7 @@
 ﻿using DBModel.DB;
 using IRepository;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Models.RequestResponse;
 using Repository.Generic;
 using System;
@@ -46,6 +47,7 @@ namespace Repository
                 DescripcionRecepcion = pedido.DescripcionRecepcion,
                 Proveedor = pedido.IdProveedorNavigation.RazonSocial,
                 idProveedor = pedido.IdProveedor,
+                Imagen=pedido.Imagen,
                 Detalles = pedido.DetallePedidoProveedors.Select(d => new LibroPedidoDetalleDto
                 {
                     Id = d.Id,
@@ -59,6 +61,81 @@ namespace Repository
                 }).ToList()
             };
         }
+
+
+        public async Task<PedidoDetalleResponse?> GetPedidoPorFecha(DateTime fecha)
+        {
+            var pedido = await dbSet
+
+                .Include(p => p.DetallePedidoProveedors)
+                    .ThenInclude(d => d.IdLibroNavigation)
+                .Include(p => p.IdProveedorNavigation)
+                .Where(p => p.Fecha.Date == fecha.Date)
+                .FirstOrDefaultAsync();
+
+            if (pedido == null) return null;
+
+            return new PedidoDetalleResponse
+            {
+                Id = pedido.Id,
+                Fecha = pedido.Fecha,
+                Estado = pedido.Estado,
+                DescripcionPedido = pedido.DescripcionPedido,
+                DescripcionRecepcion = pedido.DescripcionRecepcion,
+                Proveedor = pedido.IdProveedorNavigation.RazonSocial,
+                idProveedor = pedido.IdProveedor,
+                Imagen = pedido.Imagen,
+                Detalles = pedido.DetallePedidoProveedors.Select(d => new LibroPedidoDetalleDto
+                {
+                    Id = d.Id,
+                    idLibro = d.IdLibro,
+                    Titulo = d.IdLibroNavigation.Titulo,
+                    Isbn = d.IdLibroNavigation.Isbn,
+                    Imagen = d.IdLibroNavigation.Imagen,
+                    CantidadPedida = d.CantidadPedida,
+                    CantidadRecibida = d.CantidadRecibida,
+                    PrecioUnitario = d.PrecioUnitario
+                }).ToList()
+            };
+        }
+
+
+        public async Task<List<PedidoDetalleResponse>> getPedidoconDetalles(string estado)
+        {
+            var pedidos = await dbSet
+                .Where(p => p.Estado.ToLower() == estado.ToLower())
+                .Include(p => p.DetallePedidoProveedors)
+                    .ThenInclude(d => d.IdLibroNavigation)
+                .Include(p => p.IdProveedorNavigation)
+                .ToListAsync(); // 🔁 Devuelve todos los pedidos
+
+            if (pedidos == null || pedidos.Count == 0)
+                return new List<PedidoDetalleResponse>();
+
+            return pedidos.Select(pedido => new PedidoDetalleResponse
+            {
+                Id = pedido.Id,
+                Fecha = pedido.Fecha,
+                Estado = pedido.Estado,
+                DescripcionPedido = pedido.DescripcionPedido,
+                DescripcionRecepcion = pedido.DescripcionRecepcion,
+                Proveedor = pedido.IdProveedorNavigation.RazonSocial,
+                idProveedor = pedido.IdProveedor,
+                Imagen = pedido.Imagen,
+                Detalles = pedido.DetallePedidoProveedors.Select(d => new LibroPedidoDetalleDto
+                {
+                    Id = d.Id,
+                    idLibro = d.IdLibro,
+                    Titulo = d.IdLibroNavigation.Titulo,
+                    Isbn = d.IdLibroNavigation.Isbn,
+                    Imagen = d.IdLibroNavigation.Imagen,
+                    CantidadPedida = d.CantidadPedida,
+                    CantidadRecibida = d.CantidadRecibida,
+                    PrecioUnitario = d.PrecioUnitario
+                }).ToList()
+            }).ToList();
+        }
+
 
     }
 }

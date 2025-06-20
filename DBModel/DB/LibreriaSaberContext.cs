@@ -330,6 +330,7 @@ public partial class LibreriaSaberContext : DbContext
             entity.Property(e => e.DescripcionRecepcion).IsUnicode(false);
             entity.Property(e => e.Estado).HasMaxLength(20);
             entity.Property(e => e.Fecha).HasColumnType("datetime");
+            entity.Property(e => e.Imagen).IsUnicode(false);
 
             entity.HasOne(d => d.IdProveedorNavigation).WithMany(p => p.PedidoProveedors)
                 .HasForeignKey(d => d.IdProveedor)

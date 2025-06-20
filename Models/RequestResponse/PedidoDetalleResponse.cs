@@ -15,7 +15,7 @@ namespace Models.RequestResponse
         public string? DescripcionRecepcion { get; set; }
         public string Proveedor { get; set; } = null!;
         public int idProveedor { get; set; }
-        
+        public string? Imagen { get; set; }
         public List<LibroPedidoDetalleDto> Detalles { get; set; } = new();
     }
 

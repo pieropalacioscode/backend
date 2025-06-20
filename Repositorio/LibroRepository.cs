@@ -2,7 +2,10 @@
 using DocumentFormat.OpenXml.InkML;
 using IRepositorio;
 using Microsoft.EntityFrameworkCore;
+using Models.RequestResponse;
 using Repository.Generic;
+using UtilPaginados;
+using Models.RequestResponse;
 
 namespace Repository
 {
@@ -68,6 +71,51 @@ namespace Repository
             return await dbSet
                 .Where(libro => EF.Functions.Like(libro.Titulo, $"%{query}%"))
                 .ToListAsync();
+        }
+
+
+        public async Task<PaginacionResponse<LibroDetalleResponse>> GetLibrosConDetallePaginadoAsync(int pagina, int cantidad)
+        {
+            var query = dbSet
+                .Include(l => l.IdProveedorNavigation)
+                .Include(l => l.IdSubcategoriaNavigation)
+                .Include(l => l.IdTipoPapelNavigation)
+                .Select(libro => new LibroDetalleResponse
+                {
+                    IdLibro = libro.IdLibro,
+                    Titulo = libro.Titulo,
+                    Isbn = libro.Isbn,
+                    Tamanno = libro.Tamanno,
+                    Descripcion = libro.Descripcion,
+                    Condicion = libro.Condicion,
+                    Impresion = libro.Impresion,
+                    TipoTapa = libro.TipoTapa,
+                    Imagen = libro.Imagen,
+                    Estado = libro.Estado ?? false,
+
+                    Proveedor = new ProveedorResponse
+                    {
+                        IdProveedor = libro.IdProveedorNavigation.IdProveedor,
+                        RazonSocial = libro.IdProveedorNavigation.RazonSocial,
+                        Ruc = libro.IdProveedorNavigation.Ruc,
+                        Direccion = libro.IdProveedorNavigation.Direccion
+                        
+                    },
+                    Subcategoria = new SubcategoriaResponse
+                    {
+                        Id = libro.IdSubcategoriaNavigation.Id,
+                        Descripcion = libro.IdSubcategoriaNavigation.Descripcion,
+                        IdCategoria = libro.IdSubcategoriaNavigation.IdCategoria
+                    },
+                    TipoPapel = new TipoPapelResponse
+                    {
+                        IdTipoPapel = libro.IdTipoPapelNavigation.IdTipoPapel,
+                        Descripcion = libro.IdTipoPapelNavigation.Descripcion
+                    }
+                });
+
+
+            return await UtilPaginados.UtilPaginados.CrearPaginadoAsync(query, pagina, cantidad);
         }
 
     }

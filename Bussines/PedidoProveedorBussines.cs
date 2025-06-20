@@ -2,6 +2,8 @@
 using DBModel.DB;
 using IBussines;
 using IRepository;
+using IService;
+using Microsoft.AspNetCore.Http;
 using Models.RequestResponse;
 using Repository;
 using System;
@@ -19,17 +21,19 @@ namespace Bussines
         private readonly IDetallePedidoProveedorRepository _detalleRepo;
         private readonly IKardexRepository _kardexRepo;
         public readonly IMapper _Mapper;
+        private readonly IFirebaseStorageService _firebaseStorageService;
 
         #endregion
 
         #region constructor 
         public PedidoProveedorBussines(IMapper mapper, IDetallePedidoProveedorRepository detalleRepo,
-        IKardexRepository kardexRepo)
+        IKardexRepository kardexRepo, IFirebaseStorageService firebaseStorageService)
         {
             _Mapper = mapper;
             _IPedidoProveedorRepository = new PedidoProveedorRepository();
             _detalleRepo = detalleRepo;
             _kardexRepo = kardexRepo;
+            _firebaseStorageService = firebaseStorageService;
 
         }
         #endregion
@@ -118,8 +122,17 @@ namespace Bussines
         }
 
 
-        public Task<string> ConfirmarRecepcion(int idPedido, int idSucursal, string DescripcionRecepcion, List<DetallePedidoProveedorRequest> detalles)
+        public async Task<string> ConfirmarRecepcionConImagen(int idPedido, int idSucursal, string descripcionRecepcion, List<DetallePedidoProveedorRequest> detalles, List<IFormFile> imagenes)
         {
+            // Subir imágenes a Firebase y obtener URLs
+            List<string> urlsImagenes = new();
+            foreach (var imagen in imagenes)
+            {
+                string url = await _firebaseStorageService.UploadPedidosImageAsync(imagen);
+                urlsImagenes.Add(url);
+            }
+
+            // Continuar con el mismo flujo de ConfirmarRecepcion
             foreach (var item in detalles)
             {
                 var detalleExistente = _detalleRepo.GetById(item.Id);
@@ -134,11 +147,14 @@ namespace Bussines
 
             var pedido = _IPedidoProveedorRepository.GetById(idPedido);
             pedido.Estado = "Recibido";
-            pedido.DescripcionRecepcion = DescripcionRecepcion;
+            pedido.DescripcionRecepcion = descripcionRecepcion;
+            pedido.Imagen = string.Join(",", urlsImagenes); // ✅ Aquí se guarda concatenado
             _IPedidoProveedorRepository.Update(pedido);
 
-            return Task.FromResult("Recepción confirmada.");
+            return "Recepción confirmada.";
         }
+
+
 
 
         public async Task<List<PedidoProveedorResponse>> getPorEstado(string estado)
@@ -158,6 +174,15 @@ namespace Bussines
         public async Task<PedidoDetalleResponse?> getPedidoconDetalle(int id)
         {
            return await _IPedidoProveedorRepository.getPedidoconDetalle(id);  
+        }
+
+        public async Task<PedidoDetalleResponse?> GetPedidoPorFecha(DateTime fecha)
+        {
+            return await _IPedidoProveedorRepository.GetPedidoPorFecha(fecha);
+        }
+        public async Task<List<PedidoDetalleResponse>> getPedidoconDetalles(string estado)
+        {
+            return await _IPedidoProveedorRepository.getPedidoconDetalles(estado);
         }
     }
 }

@@ -12,5 +12,6 @@
         public string? DescripcionPedido { get; set; }
 
         public string? DescripcionRecepcion { get; set; }
+        public string? Imagen { get; set; }
     }
 }

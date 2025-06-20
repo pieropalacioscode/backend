@@ -6,7 +6,7 @@ namespace UtilPaginados
     public static class UtilPaginados
     {
         public static async Task<PaginacionResponse<T>> CrearPaginadoAsync<T>(
-       IQueryable<T> query, int pagina, int cantidad)
+                IQueryable<T> query, int pagina, int cantidad)
         {
             var total = await query.CountAsync();
             var totalPaginas = (int)Math.Ceiling(total / (double)cantidad);

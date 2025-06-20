@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UtilPaginados;
 
 namespace Bussines
 {
@@ -28,15 +29,17 @@ namespace Bussines
         public readonly ILibroRepository _ILibroRepository = null;
         public readonly IMapper _Mapper;
         private readonly IAzureStorage _azureStorage;
+        private readonly IFirebaseStorageService _firebaseStorageService;
 
         #endregion
 
         #region constructor 
-        public LibroBussines(IMapper mapper, IAzureStorage azureStorage)
+        public LibroBussines(IMapper mapper, IAzureStorage azureStorage, IFirebaseStorageService firebaseStorageService)
         {
             _Mapper = mapper;
             _ILibroRepository = new LibroRepository();
             _azureStorage = azureStorage;
+            _firebaseStorageService = firebaseStorageService;
 
         }
         #endregion
@@ -114,8 +117,8 @@ namespace Bussines
             // Mapear la entidad de solicitud a la entidad de modelo
             Libro libro = _Mapper.Map<Libro>(entity);
 
-            // Guardar la imagen en Azure Blob Storage y obtener su URL
-            string imageUrl = await _azureStorage.SaveFile("imagenes", imageFile);
+            // Subir la imagen a Firebase Storage y obtener su URL
+            string imageUrl = await _firebaseStorageService.UploadFileAsync(imageFile, "Libro");
 
             // Asignar la URL de la imagen al campo correspondiente en la entidad
             libro.Imagen = imageUrl;
@@ -126,6 +129,7 @@ namespace Bussines
             // Mapear el libro creado a la respuesta y devolverlo
             return _Mapper.Map<LibroResponse>(libro);
         }
+
 
         public async Task<List<Libro>> GetLibrosByIds(List<int> ids)
         {
@@ -185,6 +189,10 @@ namespace Bussines
             return _Mapper.Map<List<LibroResponse>>(libros);
         }
 
+        public async Task<PaginacionResponse<LibroDetalleResponse>> GetLibrosConDetallePaginadoAsync(int pagina, int cantidad)
+        {
+            return await _ILibroRepository.GetLibrosConDetallePaginadoAsync(pagina, cantidad);
+        }
     }
 
 }

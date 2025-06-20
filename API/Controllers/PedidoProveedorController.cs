@@ -5,6 +5,7 @@ using IBussines;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models.RequestResponse;
+using Newtonsoft.Json;
 
 namespace API.Controllers
 {
@@ -114,24 +115,38 @@ namespace API.Controllers
             }
         }
 
-        [HttpPut("confirmar-recepcion")]
-        public async Task<IActionResult> ConfirmarRecepcion([FromBody] ConfirmarRecepcionRequest request)
+        [HttpPut("confirmar-recepcion-con-imagen")]
+        public async Task<IActionResult> ConfirmarRecepcionConImagen(
+            [FromForm] int idPedido,
+            [FromForm] int idSucursal,
+            [FromForm] string descripcionRecepcion,
+            [FromForm] string detallesJson,
+            [FromForm] List<IFormFile> imagenes)
         {
             try
             {
-                var resultado = await _IPedidoProveedorBussines.ConfirmarRecepcion(
-                    request.IdPedido,
-                    request.IdSucursal,
-                    request.DescripcionRecepcion,
-                    request.Detalles
+                // 1. Deserializar los detalles desde JSON
+                var detalles = JsonConvert.DeserializeObject<List<DetallePedidoProveedorRequest>>(detallesJson);
+
+                // 2. Enviar a la capa de negocio
+                var mensaje = await _IPedidoProveedorBussines.ConfirmarRecepcionConImagen(
+                    idPedido,
+                    idSucursal,
+                    descripcionRecepcion,
+                    detalles,
+                    imagenes
                 );
-                return Ok(new { success = true, message = resultado });
+
+                return Ok(new { success = true, message = mensaje });
             }
             catch (Exception ex)
             {
                 return BadRequest(new { success = false, message = ex.Message });
             }
         }
+
+
+
 
         [HttpGet("estado")]
         public async Task<IActionResult> getPorEstado(string estado)
@@ -152,6 +167,30 @@ namespace API.Controllers
             return Ok(pedido);
         }
 
+        [HttpGet("fecha")]
+        public async Task<IActionResult> GetPedidosFecha([FromQuery] DateTime fecha)
+        {
+            var fechas = await _IPedidoProveedorBussines.GetPedidoPorFecha(fecha);
+            if(fechas==null)
+            {
+                
+                return NotFound();
+            }
+            return Ok(fechas);
+        }
+
+
+        [HttpGet("Detalles/estado")]
+        public async Task<IActionResult> getPedidoconDetalles(string estado)
+        {
+            var detalles = await _IPedidoProveedorBussines.getPedidoconDetalles(estado);
+            if (detalles == null)
+            {
+                
+                return NotFound();
+            }
+            return Ok(detalles);
+        }
         #endregion
     }
 }

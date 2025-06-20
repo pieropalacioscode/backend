@@ -1,5 +1,7 @@
 ﻿using DBModel.DB;
+using Models.RequestResponse;
 using UtilInterface;
+using UtilPaginados;
 
 namespace IRepositorio
 {
@@ -11,6 +13,7 @@ namespace IRepositorio
         Task<Kardex> GetKardexByLibroId(int libroId);
         Task<(List<Libro>, int)> GetLibrosPaginados(int page, int pageSize);
         Task<List<Libro>> filtroComplete(string query);
+        Task<PaginacionResponse<LibroDetalleResponse>> GetLibrosConDetallePaginadoAsync(int pagina, int cantidad);
 
     }
 }

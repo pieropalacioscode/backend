@@ -13,5 +13,7 @@ namespace IRepository
     {
         Task<List<PedidoProveedor>> getPorEstado(string estado);
         Task<PedidoDetalleResponse?> getPedidoconDetalle(int id);
+        Task<PedidoDetalleResponse?> GetPedidoPorFecha(DateTime fecha);
+        Task<List<PedidoDetalleResponse>> getPedidoconDetalles(string estado);
     }
 }

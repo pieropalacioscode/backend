@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UtilInterface;
+using UtilPaginados;
 
 
 namespace IBussines
@@ -22,5 +23,6 @@ namespace IBussines
         Task<Kardex> GetKardexByLibroId(int libroId);
         Task<(List<LibroResponse>, int)> GetLibrosPaginados(int page, int pageSize);
         Task<List<LibroResponse>> filtroComplete(string query);
+        Task<PaginacionResponse<LibroDetalleResponse>> GetLibrosConDetallePaginadoAsync(int pagina, int cantidad);
     }
 }

@@ -13,5 +13,6 @@ namespace IBussines
     {
         Task<List<Libro>> GetLibrosByAutorId(int autorId);
         Task<List<Autor>> GetAutoresByLibroId(int libroId);
+
     }
 }

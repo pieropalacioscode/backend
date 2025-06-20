@@ -17,7 +17,7 @@ public partial class DetallePedidoProveedor
     public int? CantidadRecibida { get; set; }
 
     public decimal PrecioUnitario { get; set; }
-    
+
     public virtual Libro IdLibroNavigation { get; set; } = null!;
     [JsonIgnore]
     public virtual PedidoProveedor IdPedidoProveedorNavigation { get; set; } = null!;

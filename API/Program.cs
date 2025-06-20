@@ -84,6 +84,8 @@ builder.Services.AddScoped<IDetallePedidoProveedorBussines, DetallePedidoProveed
 
 builder.Services.AddScoped<IPedidoProveedorRepository, PedidoProveedorRepository>();
 builder.Services.AddScoped<IDetallePedidoProveedorRepository, DetallePedidoProveedorRepository>();
+builder.Services.AddScoped<IFirebaseStorageService, FirebaseStorageService>();
+
 
 
 

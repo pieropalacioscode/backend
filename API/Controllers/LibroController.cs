@@ -218,8 +218,22 @@ namespace API.Controllers
             }
         }
 
+        [HttpGet("Paginator/detalles")]
+        public async Task<IActionResult> GetLibrosConDetallePaginadoAsync([FromQuery] int pagina = 1, [FromQuery] int cantidad = 10)
+        {
+            if (pagina <= 0 || cantidad <= 0)
+                return BadRequest(new { success = false, message = "Parámetros de paginación inválidos" });
 
-
+            var result = await _ILibroBussines.GetLibrosConDetallePaginadoAsync(pagina, cantidad);
+            return Ok(new
+            {
+                success = true,
+                data = result.Items,
+                total = result.Total,
+                paginaActual = result.PaginaActual,
+                totalPaginas = result.TotalPaginas
+            });
+        }
         #endregion
 
     }
