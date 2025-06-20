@@ -1,6 +1,7 @@
 ﻿using DBModel.DB;
 using Models.RequestResponse;
 using UtilInterface;
+using UtilPaginados;
 
 namespace IBussines
 {
@@ -18,5 +19,6 @@ namespace IBussines
         Task<(int totalComprobantes, decimal totalComprobantesMonto)> ObtenerResumenVentasAsync();
         Task<List<IngresoMensualResponse>> ObtenerIngresosPorMes(int mes);
         Task<List<TasaRotacionResponse>> ObtenerTasaRotacionInventario(string filtro, int offset, int limit);
+        Task<PaginacionResponse<Venta>> GenVentasPaginados(int page, int pageSize);
     }
 }

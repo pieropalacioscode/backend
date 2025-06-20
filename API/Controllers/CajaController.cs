@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Bussines;
 using IBussines;
+using IBussnies;
 using Microsoft.AspNetCore.Mvc;
 using Models.RequestResponse;
 
@@ -97,7 +98,12 @@ namespace API.Controllers
         //        return NotFound();
         //}
 
-
+        [HttpGet("paginado")]
+        public async Task<IActionResult> GetCaja([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var paginacion = await _ICajaBussines.GetCaja(page, pageSize);
+            return Ok(paginacion);
+        }
         #endregion
     }
 }

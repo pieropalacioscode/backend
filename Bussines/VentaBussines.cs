@@ -6,8 +6,7 @@ using IRepository;
 using IService;
 using Models.RequestResponse;
 using Repository;
-
-
+using UtilPaginados;
 using UtilPDF;
 
 namespace Bussines
@@ -214,6 +213,11 @@ namespace Bussines
         public Task<string> GenerarNumeroComprobante()
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<PaginacionResponse<Venta>> GenVentasPaginados(int page, int pageSize)
+        {
+            return await _IVentaRepository.GenVentas(page, pageSize);
         }
     }
 }

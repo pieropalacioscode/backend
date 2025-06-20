@@ -1,7 +1,9 @@
 ﻿using DBModel.DB;
 using IRepository;
+using Microsoft.EntityFrameworkCore;
 using Models.ResponseResponse;
 using Repository.Generic;
+using UtilPaginados;
 
 namespace Repository
 {
@@ -19,5 +21,13 @@ namespace Repository
             return user;
 
         }
+
+        public async Task<PaginacionResponse<Usuario>> GetUsuarios(int page, int pageSize)
+        {
+            var query = dbSet.AsQueryable();
+            return await UtilPaginados.UtilPaginados.CrearPaginadoAsync(query, page, pageSize);
+        }
+
+
     }
 }

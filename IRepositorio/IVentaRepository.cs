@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UtilInterface;
+using UtilPaginados;
 
 namespace IRepository
 {
@@ -20,5 +21,6 @@ namespace IRepository
         Task<(int totalComprobantes, decimal montoTotalComprobantes)> ObtenerResumenDashboardAsync();
         Task<List<IngresoMensualResponse>> ObtenerIngresosPorMes(int mes);
         Task<List<TasaRotacionResponse>> ObtenerTasaRotacionInventario(string filtro, int offset, int limit);
+        Task<PaginacionResponse<Venta>> GenVentas(int page, int pageSize);
     }
 }

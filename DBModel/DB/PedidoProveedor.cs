@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace DBModel.DB;
 
@@ -18,6 +19,6 @@ public partial class PedidoProveedor
     public string? DescripcionRecepcion { get; set; }
 
     public virtual ICollection<DetallePedidoProveedor> DetallePedidoProveedors { get; set; } = new List<DetallePedidoProveedor>();
-
+    [JsonIgnore]
     public virtual Proveedor IdProveedorNavigation { get; set; } = null!;
 }

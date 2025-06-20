@@ -2,6 +2,7 @@
 using DBModel.DB;
 using IBussnies;
 using IRepository;
+using Microsoft.EntityFrameworkCore;
 using Models.RequestRequest;
 using Models.RequestResponse;
 using Models.ResponseResponse;
@@ -11,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UtilPaginados;
 
 namespace Bussnies
 {
@@ -106,5 +108,11 @@ namespace Bussnies
             List<UsuarioResponse> res = _mapper.Map<List<UsuarioResponse>>(cat);
             return res;
         }
+
+        public async Task<PaginacionResponse<Usuario>> GetUsuarios(int page, int pageSize)
+        {
+            return await _IUsuarioRepository.GetUsuarios(page, pageSize);
+        }
+
     }
 }

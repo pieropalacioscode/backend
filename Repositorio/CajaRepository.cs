@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UtilPaginados;
 
 namespace Repository
 {
@@ -33,6 +34,12 @@ namespace Repository
         public Caja FindCajaByDate(DateTime date)
         {
             return dbSet.FirstOrDefault(c => c.Fecha.HasValue && c.Fecha.Value.Date == date.Date);
+        }
+
+        public async Task<PaginacionResponse<Caja>> GetCaja(int page, int pageSize)
+        {
+            var query = dbSet.AsQueryable();
+            return await UtilPaginados.UtilPaginados.CrearPaginadoAsync(query, page, pageSize);
         }
 
     }

@@ -118,7 +118,7 @@ namespace Bussines
         }
 
 
-        public async Task<string> ConfirmarRecepcion(int idPedido, int idSucursal, string DescripcionRecepcion, List<DetallePedidoProveedorRequest> detalles)
+        public Task<string> ConfirmarRecepcion(int idPedido, int idSucursal, string DescripcionRecepcion, List<DetallePedidoProveedorRequest> detalles)
         {
             foreach (var item in detalles)
             {
@@ -128,21 +128,36 @@ namespace Bussines
                     detalleExistente.CantidadRecibida = item.CantidadRecibida ?? 0;
                     _detalleRepo.Update(detalleExistente);
 
-                    // Aumentar stock (crear este método en KardexRepository)
                     _kardexRepo.RegistrarEntradaKardex(item.IdLibro, idSucursal, item.CantidadRecibida ?? 0, item.PrecioUnitario);
                 }
             }
 
             var pedido = _IPedidoProveedorRepository.GetById(idPedido);
-            pedido.Estado = "Completado";
+            pedido.Estado = "Recibido";
             pedido.DescripcionRecepcion = DescripcionRecepcion;
             _IPedidoProveedorRepository.Update(pedido);
 
-            return "Recepción confirmada.";
+            return Task.FromResult("Recepción confirmada.");
         }
 
 
+        public async Task<List<PedidoProveedorResponse>> getPorEstado(string estado)
+        {
+            var pedidos= await _IPedidoProveedorRepository.getPorEstado(estado);
+            var response = pedidos.Select(p => new PedidoProveedorResponse
+            {
+                Id = p.Id,
+                Fecha = p.Fecha,
+                Estado = p.Estado,
+                DescripcionPedido = p.DescripcionPedido,
+                DescripcionRecepcion = p.DescripcionRecepcion
+            }).ToList();
+            return response;
+        }
 
-
+        public async Task<PedidoDetalleResponse?> getPedidoconDetalle(int id)
+        {
+           return await _IPedidoProveedorRepository.getPedidoconDetalle(id);  
+        }
     }
 }

@@ -37,24 +37,53 @@ namespace Bussines
 
         public LoginResponse login(LoginRequest request)
         {
-            LoginResponse res = new LoginResponse();
-            UsuarioResponse user = _userBussnies.GetByUserName(request.email);
-            if (user.Username != null && !(user.Username.ToLower() == request.email.ToLower()))
+            var res = new LoginResponse();
+
+            // Validación básica de entrada nula
+            if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
             {
-                res.Message = "Usuario y/o password invalido";
+                res.Message = "El nombre de usuario y la contraseña son requeridos.";
                 res.Usuario = null;
+                res.Success = false;
                 return res;
             }
+
+            // Buscar usuario
+            var user = _userBussnies.GetByUserName(request.Username);
+            if (user == null || string.IsNullOrWhiteSpace(user.Username))
+            {
+                res.Message = "Usuario y/o contraseña inválidos.";
+                res.Usuario = null;
+                res.Success = false;
+                return res;
+            }
+
+            // Comparar usuarios ignorando mayúsculas/minúsculas
+            if (!user.Username.Equals(request.Username, StringComparison.OrdinalIgnoreCase))
+            {
+                res.Message = "Usuario y/o contraseña inválidos.";
+                res.Usuario = null;
+                res.Success = false;
+                return res;
+            }
+
+            // Verificar contraseña
             string newPassword = UtilCripto.encriptar_AES(request.Password);
-            if (!(newPassword == user.Password))
+            if (!newPassword.Equals(user.Password))
             {
-                res.Message = "Usuario y/o password invalido";
+                res.Message = "Usuario y/o contraseña inválidos.";
                 res.Usuario = null;
+                res.Success = false;
                 return res;
             }
+
+            // Si todo es correcto
             res.Usuario = user;
+            res.Message = "Inicio de sesión exitoso.";
+            res.Success = true;
             return res;
         }
+
 
 
 

@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UtilPaginados;
 
 namespace Bussines
 {
@@ -123,7 +124,10 @@ namespace Bussines
             return cajaDelDia;
         }
 
-
+        public async Task<PaginacionResponse<Caja>> GetCaja(int page, int pageSize)
+        {
+            return await _ICajaRepository.GetCaja(page, pageSize);
+        }
 
 
     }

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UtilPaginados;
 
 namespace Repository
 {
@@ -78,8 +79,15 @@ namespace Repository
         public async Task<(List<Venta>, int)> GetVentaPaginados(int page, int pageSize)
         {
             var query = dbSet.AsQueryable();
+
             int totalItems = await query.CountAsync();
-            var venta = await query.Skip((page-1) * pageSize).Take(pageSize).ToListAsync();
+
+            var venta = await query
+                .OrderByDescending(v => v.FechaVenta)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
             return (venta, totalItems);
         }
 
@@ -207,6 +215,13 @@ FETCH NEXT @limit ROWS ONLY;";
             return resultado;
         }
 
+
+        public async Task<PaginacionResponse<Venta>> GenVentas(int page, int pageSize)
+        {
+            var query = dbSet.AsQueryable();
+            var resultado = await UtilPaginados.UtilPaginados.CrearPaginadoAsync(query, page, pageSize);
+            return resultado;
+        }
 
 
     }

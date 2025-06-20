@@ -1,4 +1,5 @@
-﻿using Models.RequestResponse;
+﻿using DBModel.DB;
+using Models.RequestResponse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,7 @@ namespace IBussines
     {
         Task<string> CrearPedidoConDetalles(PedidoProveedorConDetalleRequest request);
         Task<string> ConfirmarRecepcion(int idPedido, int idSucursal,string DescripcionRecepcion, List<DetallePedidoProveedorRequest> detalles);
-
+        Task<List<PedidoProveedorResponse>> getPorEstado(string estado);
+        Task<PedidoDetalleResponse?> getPedidoconDetalle(int id);
     }
 }

@@ -87,6 +87,13 @@ namespace API.Controllers
             int res = _IUsuarioBussines.Delete(id);
             return Ok(res);
         }
+
+        [HttpGet("paginado")]
+        public async Task<IActionResult> GetUsuariosPaginados([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var paginacion = await _IUsuarioBussines.GetUsuarios(page, pageSize);
+            return Ok(paginacion); 
+        }
         #endregion
     }
 }

@@ -57,8 +57,7 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Documentación de los servicios para el sistema de Libreria Saber",
         Contact = new OpenApiContact
         {
-            Name = "José Salazar",
-            Email = "i2221915@continental.edu.pe",
+            Name = "Piero Palacios",
             Url = new Uri("https://www.linkedin.com/in/franklinleonciofuamanaraujo/"),
         },
     });

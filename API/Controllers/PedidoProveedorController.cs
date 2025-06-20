@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Bussines;
+using DBModel.DB;
 using IBussines;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -113,7 +114,7 @@ namespace API.Controllers
             }
         }
 
-        [HttpPost("confirmar-recepcion")]
+        [HttpPut("confirmar-recepcion")]
         public async Task<IActionResult> ConfirmarRecepcion([FromBody] ConfirmarRecepcionRequest request)
         {
             try
@@ -130,6 +131,25 @@ namespace API.Controllers
             {
                 return BadRequest(new { success = false, message = ex.Message });
             }
+        }
+
+        [HttpGet("estado")]
+        public async Task<IActionResult> getPorEstado(string estado)
+        {
+            var lsl= await _IPedidoProveedorBussines.getPorEstado(estado);
+            return Ok(lsl);
+
+        }
+
+
+        [HttpGet("con-detalles/{id}")]
+        public async Task<IActionResult> GetPedidoConDetalle(int id)
+        {
+            var pedido = await _IPedidoProveedorBussines.getPedidoconDetalle(id);
+            if (pedido == null)
+                return NotFound();
+
+            return Ok(pedido);
         }
 
         #endregion

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Bussines;
 using IBussines;
+using IBussnies;
 using IService;
 using Microsoft.AspNetCore.Mvc;
 using Models.RequestResponse;
@@ -186,7 +187,12 @@ namespace API.Controllers
             });
         }
 
-
+        [HttpGet("paginado")]
+        public async Task<IActionResult> GetVentasPaginadas([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var paginacion = await _IVentaBussines.GenVentasPaginados(page, pageSize);
+            return Ok(paginacion);
+        }
         #endregion
     }
 }

@@ -33,7 +33,7 @@ namespace API.Controllers
             return Ok("El servicio está escuchando");
         }
 
-        
+
 
         /// <summary>
         /// Realiza el proceso de login
@@ -41,19 +41,36 @@ namespace API.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public IActionResult post([FromBody] LoginRequest request)
+        public IActionResult Post([FromBody] LoginRequest request)
         {
-            LoginResponse res = _authBussnies.login(request);
-            if (res.Usuario == null || res.Usuario.IdUsuario == 0)
+            if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
             {
-                return Ok(res);
+                return BadRequest(new LoginResponse
+                {
+                    Success = false,
+                    Message = "Username y password son requeridos"
+                });
             }
 
+            LoginResponse res = _authBussnies.login(request);
+
+            if (res.Usuario == null || res.Usuario.IdUsuario == 0)
+            {
+                return BadRequest(new LoginResponse
+                {
+                    Success = false,
+                    Message = res.Message ?? "Credenciales inválidas"
+                });
+            }
+
+            // Solo aquí generas y devuelves el token
             res.Token = CreateToken(res.Usuario);
-            res.RefreshToken = new Guid().ToString();
+            res.RefreshToken = Guid.NewGuid().ToString();
             res.Success = true;
+
             return Ok(res);
         }
+
 
         //[HttpPost("google")]
         //public async Task<IActionResult> GoogleAuth([FromBody] GoogleAuthDto googleAuthDto)
