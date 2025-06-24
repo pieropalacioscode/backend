@@ -14,6 +14,8 @@ namespace IRepositorio
         Task<(List<Libro>, int)> GetLibrosPaginados(int page, int pageSize);
         Task<List<Libro>> filtroComplete(string query);
         Task<PaginacionResponse<LibroDetalleResponse>> GetLibrosConDetallePaginadoAsync(int pagina, int cantidad);
+        Task<PaginacionResponse<InventarioResponse>> GetInventarioPaginadoAsync(int pagina, int cantidad);
+        Task<List<InventarioResponse>> BuscarEnInventario(string query);
 
     }
 }

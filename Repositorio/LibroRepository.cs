@@ -68,10 +68,87 @@ namespace Repository
 
         public async Task<List<Libro>> filtroComplete(string query)
         {
-            return await dbSet
-                .Where(libro => EF.Functions.Like(libro.Titulo, $"%{query}%"))
+            if (string.IsNullOrWhiteSpace(query))
+                return new List<Libro>();
+
+            var palabras = query.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            var librosQuery = dbSet
+                .Include(l => l.LibroAutors)
+                    .ThenInclude(la => la.IdAutorNavigation)
+                .AsQueryable();
+
+            // Agregamos condiciones dinámicamente
+            foreach (var palabra in palabras)
+            {
+                librosQuery = librosQuery.Where(libro =>
+                    libro.Titulo.ToLower().Contains(palabra) ||
+                    libro.Isbn.ToLower().Contains(palabra) ||
+                    libro.LibroAutors.Any(la =>
+                        la.IdAutorNavigation.Nombre.ToLower().Contains(palabra) ||
+                        la.IdAutorNavigation.Apellido.ToLower().Contains(palabra))
+                );
+            }
+
+            return await librosQuery
+                .OrderBy(l => l.Titulo)
+                .Take(20) // puedes ajustar el límite
                 .ToListAsync();
         }
+
+        public async Task<List<InventarioResponse>> BuscarEnInventario(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return new List<InventarioResponse>();
+
+            var palabras = query.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            var librosQuery = dbSet
+                .Include(l => l.Kardex)
+                .Include(l => l.IdProveedorNavigation)
+                .Include(l => l.IdSubcategoriaNavigation)
+                .Include(l => l.IdTipoPapelNavigation)
+                .Include(l => l.LibroAutors)
+                    .ThenInclude(la => la.IdAutorNavigation)
+                .Where(l => l.Estado == true)
+                .AsQueryable();
+
+            // Tokenización para buscar por cada palabra
+            foreach (var palabra in palabras)
+            {
+                librosQuery = librosQuery.Where(l =>
+                    l.Titulo!.ToLower().Contains(palabra) ||
+                    l.Isbn!.ToLower().Contains(palabra) ||
+                    l.LibroAutors.Any(la =>
+                        la.IdAutorNavigation.Nombre!.ToLower().Contains(palabra) ||
+                        la.IdAutorNavigation.Apellido!.ToLower().Contains(palabra))
+                );
+            }
+
+            // Proyección al modelo InventarioResponse
+            var resultado = await librosQuery
+                .OrderBy(l => l.Titulo)
+                .Take(20)
+                .Select(l => new InventarioResponse
+                {
+                    IdLibro = l.IdLibro,
+                    Titulo = l.Titulo ?? "",
+                    Isbn = l.Isbn ?? "",
+                    Stock = l.Kardex != null ? l.Kardex.Stock ?? 0 : 0,
+                    UltPrecioCosto = l.Kardex != null ? l.Kardex.UltPrecioCosto ?? 0 : 0,
+                    Proveedor = l.IdProveedorNavigation.RazonSocial ?? "",
+                    Subcategoria = l.IdSubcategoriaNavigation.Descripcion ?? "",
+                    TipoPapel = l.IdTipoPapelNavigation.Descripcion ?? "",
+                    Autores = l.LibroAutors
+                        .Select(la => $"{la.IdAutorNavigation.Nombre} {la.IdAutorNavigation.Apellido}".Trim())
+                        .ToList()
+                })
+                .ToListAsync();
+
+            return resultado;
+        }
+
+
 
 
         public async Task<PaginacionResponse<LibroDetalleResponse>> GetLibrosConDetallePaginadoAsync(int pagina, int cantidad)
@@ -117,6 +194,37 @@ namespace Repository
 
             return await UtilPaginados.UtilPaginados.CrearPaginadoAsync(query, pagina, cantidad);
         }
+
+
+        public async Task<PaginacionResponse<InventarioResponse>> GetInventarioPaginadoAsync(int pagina, int cantidad)
+        {
+            var query = dbSet
+                .Include(l => l.Kardex)
+                .Include(l => l.IdProveedorNavigation)
+                .Include(l => l.IdSubcategoriaNavigation)
+                .Include(l => l.IdTipoPapelNavigation)
+                .Include(l => l.LibroAutors)
+                    .ThenInclude(la => la.IdAutorNavigation)
+                .Where(l => l.Estado == true)
+                .Select(l => new InventarioResponse
+                {
+                    IdLibro = l.IdLibro,
+                    Titulo = l.Titulo,
+                    Isbn = l.Isbn,
+                    Stock = l.Kardex != null ? l.Kardex.Stock ?? 0 : 0,
+                    UltPrecioCosto = l.Kardex != null ? l.Kardex.UltPrecioCosto ?? 0 : 0,
+                    Proveedor = l.IdProveedorNavigation.RazonSocial ?? "",
+                    Subcategoria = l.IdSubcategoriaNavigation.Descripcion ?? "",
+                    TipoPapel = l.IdTipoPapelNavigation.Descripcion ?? "",
+                    Autores = l.LibroAutors
+                        .Select(la => $"{la.IdAutorNavigation.Nombre} {la.IdAutorNavigation.Apellido}".Trim())
+                        .ToList()
+                });
+
+            return await UtilPaginados.UtilPaginados.CrearPaginadoAsync(query, pagina, cantidad);
+        }
+
+
 
     }
 }  

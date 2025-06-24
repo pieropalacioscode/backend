@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UtilPaginados;
 
 namespace Bussines
 {
@@ -122,36 +123,51 @@ namespace Bussines
         }
 
 
-        public async Task<string> ConfirmarRecepcionConImagen(int idPedido, int idSucursal, string descripcionRecepcion, List<DetallePedidoProveedorRequest> detalles, List<IFormFile> imagenes)
+        public async Task<string> ConfirmarRecepcionConImagen(
+    int idPedido,
+    int idSucursal,
+    string? descripcionRecepcion,
+    List<DetallePedidoProveedorRequest> detalles,
+    List<IFormFile> imagenes,
+    string estado) // 👈 NUEVO parámetro
         {
-            // Subir imágenes a Firebase y obtener URLs
+            // Subir imágenes a Firebase solo si no está cancelado
             List<string> urlsImagenes = new();
-            foreach (var imagen in imagenes)
+            if (estado != "Cancelado" && imagenes != null && imagenes.Count > 0)
             {
-                string url = await _firebaseStorageService.UploadPedidosImageAsync(imagen);
-                urlsImagenes.Add(url);
-            }
-
-            // Continuar con el mismo flujo de ConfirmarRecepcion
-            foreach (var item in detalles)
-            {
-                var detalleExistente = _detalleRepo.GetById(item.Id);
-                if (detalleExistente != null)
+                foreach (var imagen in imagenes)
                 {
-                    detalleExistente.CantidadRecibida = item.CantidadRecibida ?? 0;
-                    _detalleRepo.Update(detalleExistente);
-
-                    _kardexRepo.RegistrarEntradaKardex(item.IdLibro, idSucursal, item.CantidadRecibida ?? 0, item.PrecioUnitario);
+                    string url = await _firebaseStorageService.UploadPedidosImageAsync(imagen);
+                    urlsImagenes.Add(url);
                 }
             }
 
+            // Actualizar detalles y registrar en Kardex solo si es "Recibido"
+            if (estado == "Recibido")
+            {
+                foreach (var item in detalles)
+                {
+                    var detalleExistente = _detalleRepo.GetById(item.Id);
+                    if (detalleExistente != null)
+                    {
+                        detalleExistente.CantidadRecibida = item.CantidadRecibida ?? 0;
+                        _detalleRepo.Update(detalleExistente);
+
+                        _kardexRepo.RegistrarEntradaKardex(item.IdLibro, idSucursal, item.CantidadRecibida ?? 0, item.PrecioUnitario);
+                    }
+                }
+            }
+
+            // Actualizar estado del pedido
             var pedido = _IPedidoProveedorRepository.GetById(idPedido);
-            pedido.Estado = "Recibido";
-            pedido.DescripcionRecepcion = descripcionRecepcion;
-            pedido.Imagen = string.Join(",", urlsImagenes); // ✅ Aquí se guarda concatenado
+            pedido.Estado = estado;
+            pedido.DescripcionRecepcion = descripcionRecepcion ?? string.Empty;
+            if (urlsImagenes.Any())
+                pedido.Imagen = string.Join(",", urlsImagenes);
+
             _IPedidoProveedorRepository.Update(pedido);
 
-            return "Recepción confirmada.";
+            return estado == "Cancelado" ? "Pedido cancelado correctamente." : "Recepción confirmada.";
         }
 
 
@@ -176,13 +192,19 @@ namespace Bussines
            return await _IPedidoProveedorRepository.getPedidoconDetalle(id);  
         }
 
-        public async Task<PedidoDetalleResponse?> GetPedidoPorFecha(DateTime fecha)
+        public async Task<PaginacionResponse<PedidoDetalleResponse>> GetPedidosPorFechaPaginado(DateTime fecha, int pagina, int cantidad)
         {
-            return await _IPedidoProveedorRepository.GetPedidoPorFecha(fecha);
+            return await _IPedidoProveedorRepository.GetPedidosPorFechaPaginado(fecha,pagina,cantidad);
         }
-        public async Task<List<PedidoDetalleResponse>> getPedidoconDetalles(string estado)
+        public async Task<PaginacionResponse<PedidoDetalleResponse>> getPedidoconDetalles(string estado, int pagina, int cantidad)
         {
-            return await _IPedidoProveedorRepository.getPedidoconDetalles(estado);
+            return await _IPedidoProveedorRepository.GetPedidosConDetallesPaginado(estado,pagina,cantidad);
+
+        }
+
+        public async Task<ContadorEstadosPedidoResponse> getcanEstado()
+        {
+            return await _IPedidoProveedorRepository.getcanEstado();
         }
     }
 }

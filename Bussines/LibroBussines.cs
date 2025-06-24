@@ -193,6 +193,16 @@ namespace Bussines
         {
             return await _ILibroRepository.GetLibrosConDetallePaginadoAsync(pagina, cantidad);
         }
+
+        public async Task<PaginacionResponse<InventarioResponse>> GetInventarioPaginadoAsync(int pagina, int cantidad)
+        {
+            return await _ILibroRepository.GetInventarioPaginadoAsync(pagina, cantidad);
+        }
+
+        public async Task<List<InventarioResponse>> BuscarEnInventario(string query)
+        {
+            return await _ILibroRepository.BuscarEnInventario(query);
+        }
     }
 
 }

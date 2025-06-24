@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UtilPaginados;
 
 namespace Repository
 {
@@ -63,79 +64,89 @@ namespace Repository
         }
 
 
-        public async Task<PedidoDetalleResponse?> GetPedidoPorFecha(DateTime fecha)
+        public async Task<PaginacionResponse<PedidoDetalleResponse>> GetPedidosPorFechaPaginado(DateTime fecha, int pagina, int cantidad)
         {
-            var pedido = await dbSet
-
+            var query = dbSet
                 .Include(p => p.DetallePedidoProveedors)
                     .ThenInclude(d => d.IdLibroNavigation)
                 .Include(p => p.IdProveedorNavigation)
                 .Where(p => p.Fecha.Date == fecha.Date)
-                .FirstOrDefaultAsync();
-
-            if (pedido == null) return null;
-
-            return new PedidoDetalleResponse
-            {
-                Id = pedido.Id,
-                Fecha = pedido.Fecha,
-                Estado = pedido.Estado,
-                DescripcionPedido = pedido.DescripcionPedido,
-                DescripcionRecepcion = pedido.DescripcionRecepcion,
-                Proveedor = pedido.IdProveedorNavigation.RazonSocial,
-                idProveedor = pedido.IdProveedor,
-                Imagen = pedido.Imagen,
-                Detalles = pedido.DetallePedidoProveedors.Select(d => new LibroPedidoDetalleDto
+                .OrderByDescending(p => p.Fecha)
+                .Select(pedido => new PedidoDetalleResponse
                 {
-                    Id = d.Id,
-                    idLibro = d.IdLibro,
-                    Titulo = d.IdLibroNavigation.Titulo,
-                    Isbn = d.IdLibroNavigation.Isbn,
-                    Imagen = d.IdLibroNavigation.Imagen,
-                    CantidadPedida = d.CantidadPedida,
-                    CantidadRecibida = d.CantidadRecibida,
-                    PrecioUnitario = d.PrecioUnitario
-                }).ToList()
-            };
+                    Id = pedido.Id,
+                    Fecha = pedido.Fecha,
+                    Estado = pedido.Estado,
+                    DescripcionPedido = pedido.DescripcionPedido,
+                    DescripcionRecepcion = pedido.DescripcionRecepcion,
+                    Proveedor = pedido.IdProveedorNavigation.RazonSocial,
+                    idProveedor = pedido.IdProveedor,
+                    Imagen = pedido.Imagen,
+                    Detalles = pedido.DetallePedidoProveedors.Select(d => new LibroPedidoDetalleDto
+                    {
+                        Id = d.Id,
+                        idLibro = d.IdLibro,
+                        Titulo = d.IdLibroNavigation.Titulo,
+                        Isbn = d.IdLibroNavigation.Isbn,
+                        Imagen = d.IdLibroNavigation.Imagen,
+                        CantidadPedida = d.CantidadPedida,
+                        CantidadRecibida = d.CantidadRecibida,
+                        PrecioUnitario = d.PrecioUnitario
+                    }).ToList()
+                });
+
+            return await UtilPaginados.UtilPaginados.CrearPaginadoAsync(query, pagina, cantidad);
         }
 
 
-        public async Task<List<PedidoDetalleResponse>> getPedidoconDetalles(string estado)
+
+        public async Task<PaginacionResponse<PedidoDetalleResponse>> GetPedidosConDetallesPaginado(string estado, int pagina, int cantidad)
         {
-            var pedidos = await dbSet
+            var query = dbSet
                 .Where(p => p.Estado.ToLower() == estado.ToLower())
+                .OrderByDescending(p => p.Fecha)
                 .Include(p => p.DetallePedidoProveedors)
                     .ThenInclude(d => d.IdLibroNavigation)
                 .Include(p => p.IdProveedorNavigation)
-                .ToListAsync(); // 🔁 Devuelve todos los pedidos
-
-            if (pedidos == null || pedidos.Count == 0)
-                return new List<PedidoDetalleResponse>();
-
-            return pedidos.Select(pedido => new PedidoDetalleResponse
-            {
-                Id = pedido.Id,
-                Fecha = pedido.Fecha,
-                Estado = pedido.Estado,
-                DescripcionPedido = pedido.DescripcionPedido,
-                DescripcionRecepcion = pedido.DescripcionRecepcion,
-                Proveedor = pedido.IdProveedorNavigation.RazonSocial,
-                idProveedor = pedido.IdProveedor,
-                Imagen = pedido.Imagen,
-                Detalles = pedido.DetallePedidoProveedors.Select(d => new LibroPedidoDetalleDto
+                .Select(pedido => new PedidoDetalleResponse
                 {
-                    Id = d.Id,
-                    idLibro = d.IdLibro,
-                    Titulo = d.IdLibroNavigation.Titulo,
-                    Isbn = d.IdLibroNavigation.Isbn,
-                    Imagen = d.IdLibroNavigation.Imagen,
-                    CantidadPedida = d.CantidadPedida,
-                    CantidadRecibida = d.CantidadRecibida,
-                    PrecioUnitario = d.PrecioUnitario
-                }).ToList()
-            }).ToList();
+                    Id = pedido.Id,
+                    Fecha = pedido.Fecha,
+                    Estado = pedido.Estado,
+                    DescripcionPedido = pedido.DescripcionPedido,
+                    DescripcionRecepcion = pedido.DescripcionRecepcion,
+                    Proveedor = pedido.IdProveedorNavigation.RazonSocial,
+                    idProveedor = pedido.IdProveedor,
+                    Imagen = pedido.Imagen,
+                    Detalles = pedido.DetallePedidoProveedors.Select(d => new LibroPedidoDetalleDto
+                    {
+                        Id = d.Id,
+                        idLibro = d.IdLibro,
+                        Titulo = d.IdLibroNavigation.Titulo,
+                        Isbn = d.IdLibroNavigation.Isbn,
+                        Imagen = d.IdLibroNavigation.Imagen,
+                        CantidadPedida = d.CantidadPedida,
+                        CantidadRecibida = d.CantidadRecibida,
+                        PrecioUnitario = d.PrecioUnitario
+                    }).ToList()
+                });
+
+            return await UtilPaginados.UtilPaginados.CrearPaginadoAsync(query, pagina, cantidad);
         }
 
+        public async Task<ContadorEstadosPedidoResponse> getcanEstado()
+        {
+            var totalIniciados = await dbSet.CountAsync(p => p.Estado.ToLower() == "Iniciado");
+            var totalRecibidos = await dbSet.CountAsync(p => p.Estado.ToLower() == "Recibido");
+            var totalCancelados = await dbSet.CountAsync(p => p.Estado.ToLower() == "Cancelado");
+
+            return new ContadorEstadosPedidoResponse
+            {
+                TotalIniciados = totalIniciados,
+                TotalRecibidos = totalRecibidos,
+                TotalCancelados = totalCancelados
+            };
+        }
 
     }
 }

@@ -234,8 +234,22 @@ namespace API.Controllers
                 totalPaginas = result.TotalPaginas
             });
         }
-        #endregion
 
+
+        [HttpGet("inventario")]
+        public async Task<IActionResult> GetInventarioPaginado([FromQuery] int pagina = 1, [FromQuery] int cantidad = 10)
+        {
+            var resultado = await _ILibroBussines.GetInventarioPaginadoAsync(pagina, cantidad);
+            return Ok(resultado);
+        }
+
+        [HttpGet("buscar-inventario")]
+        #endregion
+        public async Task<IActionResult>  BuscarEnInventario(string query)
+        {
+            var datos = await _ILibroBussines.BuscarEnInventario(query);
+            return Ok(datos);
+        }
     }
 }
     

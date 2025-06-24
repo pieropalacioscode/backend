@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UtilInterface;
+using UtilPaginados;
 
 namespace IRepository
 {
@@ -13,7 +14,8 @@ namespace IRepository
     {
         Task<List<PedidoProveedor>> getPorEstado(string estado);
         Task<PedidoDetalleResponse?> getPedidoconDetalle(int id);
-        Task<PedidoDetalleResponse?> GetPedidoPorFecha(DateTime fecha);
-        Task<List<PedidoDetalleResponse>> getPedidoconDetalles(string estado);
+        Task<PaginacionResponse<PedidoDetalleResponse>> GetPedidosPorFechaPaginado(DateTime fecha, int pagina, int cantidad);
+        Task<PaginacionResponse<PedidoDetalleResponse>> GetPedidosConDetallesPaginado(string estado, int pagina, int cantidad);
+        Task<ContadorEstadosPedidoResponse> getcanEstado();
     }
 }

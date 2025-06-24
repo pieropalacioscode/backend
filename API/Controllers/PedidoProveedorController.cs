@@ -119,9 +119,10 @@ namespace API.Controllers
         public async Task<IActionResult> ConfirmarRecepcionConImagen(
             [FromForm] int idPedido,
             [FromForm] int idSucursal,
-            [FromForm] string descripcionRecepcion,
+            [FromForm] string? descripcionRecepcion,
             [FromForm] string detallesJson,
-            [FromForm] List<IFormFile> imagenes)
+            [FromForm] List<IFormFile> imagenes,
+            [FromForm] string? estado)
         {
             try
             {
@@ -134,7 +135,9 @@ namespace API.Controllers
                     idSucursal,
                     descripcionRecepcion,
                     detalles,
-                    imagenes
+                    imagenes,
+                    estado
+                    
                 );
 
                 return Ok(new { success = true, message = mensaje });
@@ -168,9 +171,9 @@ namespace API.Controllers
         }
 
         [HttpGet("fecha")]
-        public async Task<IActionResult> GetPedidosFecha([FromQuery] DateTime fecha)
+        public async Task<IActionResult> GetPedidosFecha([FromQuery] DateTime fecha, [FromQuery] int pagina = 1, [FromQuery] int cantidad = 10)
         {
-            var fechas = await _IPedidoProveedorBussines.GetPedidoPorFecha(fecha);
+            var fechas = await _IPedidoProveedorBussines.GetPedidosPorFechaPaginado(fecha,pagina,cantidad);
             if(fechas==null)
             {
                 
@@ -181,15 +184,22 @@ namespace API.Controllers
 
 
         [HttpGet("Detalles/estado")]
-        public async Task<IActionResult> getPedidoconDetalles(string estado)
+        public async Task<IActionResult> getPedidoconDetalles([FromQuery] string estado, [FromQuery] int pagina = 1, [FromQuery] int cantidad = 10)
         {
-            var detalles = await _IPedidoProveedorBussines.getPedidoconDetalles(estado);
+            var detalles = await _IPedidoProveedorBussines.getPedidoconDetalles(estado,pagina,cantidad);
             if (detalles == null)
             {
                 
                 return NotFound();
             }
             return Ok(detalles);
+        }
+
+        [HttpGet("contador")]
+        public async Task<IActionResult> GetCant()
+        {
+            var catidad= await _IPedidoProveedorBussines.getcanEstado();
+            return Ok(catidad);
         }
         #endregion
     }
