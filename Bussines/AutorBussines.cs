@@ -93,5 +93,11 @@ namespace Bussines
             List<AutorResponse> res = _Mapper.Map<List<AutorResponse>>(au);
             return res;
         }
+
+
+        public async Task<Autor> GetByNameAsync(string nombre)
+        {
+            return await _IAutorRepository.GetByName(nombre);
+        }
     }
 }

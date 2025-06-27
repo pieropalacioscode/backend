@@ -37,6 +37,8 @@ public partial class LibreriaSaberContext : DbContext
 
     public virtual DbSet<LibroAutor> LibroAutors { get; set; }
 
+    public virtual DbSet<Notificacion> Notificacions { get; set; }
+
     public virtual DbSet<PedidoProveedor> PedidoProveedors { get; set; }
 
     public virtual DbSet<Persona> Personas { get; set; }
@@ -320,6 +322,23 @@ public partial class LibreriaSaberContext : DbContext
                 .HasConstraintName("FK_LibroAutor_Libro");
         });
 
+        modelBuilder.Entity<Notificacion>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Notifica__3214EC075B11DE6D");
+
+            entity.ToTable("Notificacion");
+
+            entity.Property(e => e.Fecha)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Mensaje).HasMaxLength(500);
+            entity.Property(e => e.Tipo).HasMaxLength(50);
+
+            entity.HasOne(d => d.IdLibroNavigation).WithMany(p => p.Notificacions)
+                .HasForeignKey(d => d.IdLibro)
+                .HasConstraintName("FK_Notificacion_Libro");
+        });
+
         modelBuilder.Entity<PedidoProveedor>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__PedidoPr__3214EC079EEBF816");
@@ -331,6 +350,10 @@ public partial class LibreriaSaberContext : DbContext
             entity.Property(e => e.Estado).HasMaxLength(20);
             entity.Property(e => e.Fecha).HasColumnType("datetime");
             entity.Property(e => e.Imagen).IsUnicode(false);
+
+            entity.HasOne(d => d.IdPersonaNavigation).WithMany(p => p.PedidoProveedors)
+                .HasForeignKey(d => d.IdPersona)
+                .HasConstraintName("FK_PedidoPersona");
 
             entity.HasOne(d => d.IdProveedorNavigation).WithMany(p => p.PedidoProveedors)
                 .HasForeignKey(d => d.IdProveedor)

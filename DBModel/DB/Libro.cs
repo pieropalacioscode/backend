@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Serialization;
+﻿using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace DBModel.DB;
 
@@ -45,6 +47,8 @@ public partial class Libro
     public virtual Kardex? Kardex { get; set; }
     [JsonIgnore]
     public virtual ICollection<LibroAutor> LibroAutors { get; set; } = new List<LibroAutor>();
+    [JsonIgnore]
+    public virtual ICollection<Notificacion> Notificacions { get; set; } = new List<Notificacion>();
     [JsonIgnore]
     public virtual ICollection<Precio> Precios { get; set; } = new List<Precio>();
 }

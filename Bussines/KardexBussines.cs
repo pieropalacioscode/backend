@@ -2,6 +2,7 @@
 using DBModel.DB;
 using IBussines;
 using IRepository;
+using Microsoft.AspNetCore.SignalR;
 using Models.RequestResponse;
 using Repository;
 using System;
@@ -98,5 +99,7 @@ namespace Bussines
             List<KardexResponse> res = _Mapper.Map<List<KardexResponse>>(au);
             return res;
         }
+
+
     }
 }

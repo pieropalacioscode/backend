@@ -10,6 +10,7 @@ using Models.RequestResponse;
 using Service;
 using System.Threading.Tasks;
 using System;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers
 {
@@ -249,6 +250,61 @@ namespace API.Controllers
         {
             var datos = await _ILibroBussines.BuscarEnInventario(query);
             return Ok(datos);
+        }
+
+        /// <summary>
+        /// Inserta un nuevo registro con la opción de subir un archivo a Firebase
+        /// </summary>
+        /// <param name="request">Registro a insertar</param>
+        /// <param name="imageFile">Archivo de imagen a subir</param>
+        /// <returns>Retorna el registro insertado con la URL de la imagen</returns>
+        [HttpPost("createDetalleLibro")]
+        public async Task<IActionResult> CreateWithImageFirebase([FromForm] LibroconautorRequest request, decimal precioVenta, int stock, IFormFile? imageFile = null)
+        {
+            try
+            {
+                var libroResponse = await _ILibroBussines.CreateImagenDetalle(request, imageFile, precioVenta, stock);
+                return Ok(libroResponse);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error interno del servidor: " + ex.Message);
+            }
+        }
+
+
+        /// <summary>
+        /// Actualiza un registro
+        /// </summary>
+        /// <param name="entity">registro a actualizar</param>
+        /// <returns>retorna el registro actualizado</returns>
+        [HttpPut("detalles")]
+        public async Task<IActionResult> Update([FromForm] LibroconautorRequest request, IFormFile? imageFile, decimal precioVenta, int stock)
+        {
+            // Esperamos a que la tarea se complete
+            LibroResponse res = await _ILibroBussines.UpdateLib(request, imageFile, precioVenta, stock);
+            return Ok(res);
+        }
+
+        //Filtrador Completo
+        [HttpGet("filtrar")]
+        public async Task<IActionResult> FiltrarLibros([FromQuery] bool? estado, [FromQuery] string? titulo = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var (libros, totalItems) = await _ILibroBussines.FiltrarLibrosAsync(estado, titulo, page, pageSize);
+
+            return Ok(new { libros, totalItems });
+        }
+        //Cambiar estado a inactivo
+        [HttpPut("cambiar-estado/{id}")]
+        public async Task<IActionResult> CambiarEstado(int id)
+        {
+            var resultado = await _ILibroBussines.CambiarEstadoLibro(id);
+            if (!resultado)
+            {
+                return NotFound(new { mensaje = "Libro no encontrado" });
+            }
+
+            return Ok(new { mensaje = "Estado actualizado correctamente" });
         }
     }
 }

@@ -1,32 +1,34 @@
-﻿using AutoMapper;
+﻿using Models.Shared.Hubs;
+using AutoMapper;
 using Bussines;
-using DBModel.DB;
 using IBussines;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-//using Bussines;
+using Microsoft.AspNetCore.SignalR;
 using Models.RequestResponse;
+using IRepository;
 
 namespace API.Controllers
 {
-    
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
-    public class AutorController : ControllerBase
+    public class NotificacionController : ControllerBase
     {
         #region Declaracion de vcariables generales
-        public readonly IAutorBussines _IAutorBussines = null;
-        public readonly IMapper _Mapper;
+        private readonly INotificacionBussines _INotificacionBussines;
+        private readonly IMapper _Mapper;
+        private readonly IHubContext<NotificacionHub> _hubContext;
         #endregion
 
         #region constructor 
-        public AutorController(IMapper mapper)
+        public NotificacionController(
+            INotificacionBussines notificacionBussines,
+            IMapper mapper,
+            IHubContext<NotificacionHub> hubContext)
         {
+            _INotificacionBussines = notificacionBussines;
             _Mapper = mapper;
-            _IAutorBussines = new AutorBussines(_Mapper);
+            _hubContext = hubContext;
         }
         #endregion
 
@@ -38,7 +40,7 @@ namespace API.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            List<AutorResponse> lsl = _IAutorBussines.getAll();
+            List<NotificacionResponse> lsl = _INotificacionBussines.getAll();
             return Ok(lsl);
         }
 
@@ -50,7 +52,7 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            AutorResponse res = _IAutorBussines.getById(id);
+            NotificacionResponse res = _INotificacionBussines.getById(id);
             return Ok(res);
         }
 
@@ -60,9 +62,9 @@ namespace API.Controllers
         /// <param name="request">Registro a insertar</param>
         /// <returns>Retorna el registro insertado</returns>
         [HttpPost]
-        public IActionResult Create([FromBody] AutorRequest request)
+        public IActionResult Create([FromBody] NotificacionRequest request)
         {
-            AutorResponse res = _IAutorBussines.Create(request);
+            NotificacionResponse res = _INotificacionBussines.Create(request);
             return Ok(res);
         }
 
@@ -72,9 +74,9 @@ namespace API.Controllers
         /// <param name="entity">registro a actualizar</param>
         /// <returns>retorna el registro Actualiza</returns>
         [HttpPut]
-        public IActionResult Update([FromBody] AutorRequest request)
+        public IActionResult Update([FromBody] NotificacionRequest request)
         {
-            AutorResponse res = _IAutorBussines.Update(request);
+            NotificacionResponse res = _INotificacionBussines.Update(request);
             return Ok(res);
         }
 
@@ -86,26 +88,26 @@ namespace API.Controllers
         [HttpDelete("{id}")]
         public IActionResult delete(int id)
         {
-            int res = _IAutorBussines.Delete(id);
+            int res = _INotificacionBussines.Delete(id);
             return Ok(res);
         }
 
-        /// <summary>
-        /// busca
-        /// </summary>
-        /// <param name="id">Valor del PK</param>
-        /// <returns>Cantidad de registros afectados</returns>
-        [HttpGet("GetByName")]
-        public async Task<ActionResult<Autor>> GetByName(string nombre)
+        [HttpPost("crear-y-notificar")]
+        public async Task<IActionResult> CreateYNotificar([FromBody] NotificacionRequest request)
         {
-            var autor = await _IAutorBussines.GetByNameAsync(nombre);
+            var result = _INotificacionBussines.Create(request);
 
-            if (autor == null)
-            {
-                return NotFound(new { message = "Autor no encontrado." });
-            }
+            // 🔔 Notificar en tiempo real
+            await _hubContext.Clients.All.SendAsync("RecibirNotificacion", result);
 
-            return Ok(autor);
+            return Ok(result);
+        }
+
+        [HttpGet("verificar-stock")]
+        public async Task<IActionResult> VerificarStock()
+        {
+            await _INotificacionBussines.VerificarStockBajoYNotificar();
+            return Ok(new { success = true, message = "Stock verificado." });
         }
 
         #endregion

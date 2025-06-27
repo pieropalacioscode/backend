@@ -13,6 +13,6 @@ public partial class Subcategoria
     public int IdCategoria { get; set; }
     [JsonIgnore]
     public virtual Categoria IdCategoriaNavigation { get; set; } = null!;
-    [JsonIgnore]
+
     public virtual ICollection<Libro> Libros { get; set; } = new List<Libro>();
 }

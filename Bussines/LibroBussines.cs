@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using Models.RequestResponse;
 using Repository;
 using Service;
@@ -26,20 +27,30 @@ namespace Bussines
     {
         #region Declaracion de vcariables generales
         
-        public readonly ILibroRepository _ILibroRepository = null;
+        public readonly ILibroRepository _ILibroRepository;
         public readonly IMapper _Mapper;
         private readonly IAzureStorage _azureStorage;
         private readonly IFirebaseStorageService _firebaseStorageService;
+        private readonly IPrecioRepository _PrecioRepository;
+        private readonly IKardexRepository _KardexRepository;
+        private readonly IAutorRepository _autorRepository;
+        private readonly ILibroAutorRepository _libroAutorRepository;
 
         #endregion
 
         #region constructor 
-        public LibroBussines(IMapper mapper, IAzureStorage azureStorage, IFirebaseStorageService firebaseStorageService)
+        public LibroBussines(IMapper mapper, IAzureStorage azureStorage, IFirebaseStorageService firebaseStorageService, IPrecioRepository iPrecioRepository, IKardexRepository kardexRepository
+            , IAutorRepository autorRepository,
+            ILibroAutorRepository libroAutorRepository)
         {
             _Mapper = mapper;
             _ILibroRepository = new LibroRepository();
             _azureStorage = azureStorage;
             _firebaseStorageService = firebaseStorageService;
+            _autorRepository = autorRepository;
+            _libroAutorRepository = libroAutorRepository;
+            _PrecioRepository = iPrecioRepository;
+            _KardexRepository = kardexRepository;
 
         }
         #endregion
@@ -202,6 +213,189 @@ namespace Bussines
         public async Task<List<InventarioResponse>> BuscarEnInventario(string query)
         {
             return await _ILibroRepository.BuscarEnInventario(query);
+        }
+
+
+        public async Task<LibroResponse> CreateImagenDetalle(LibroconautorRequest entity, IFormFile? imageFile, decimal precioVenta, int stock)
+        {
+            Libro libro = _Mapper.Map<Libro>(entity.Libro);
+
+            // Subir imagen solo si viene
+            if (imageFile != null && imageFile.Length > 0)
+            {
+                string imageUrl = await _firebaseStorageService.UploadFileAsync(imageFile, "libros-images");
+                libro.Imagen = imageUrl;
+            }
+
+            libro = _ILibroRepository.Create(libro);
+
+            // --- Autor ---
+            if (entity.Autor.Nombre != null)
+            {
+                Autor autors = await _autorRepository.GetByName(entity.Autor.Nombre);
+                if (autors == null)
+                {
+                    autors = new Autor
+                    {
+                        Nombre = entity.Autor.Nombre,
+                        Apellido = entity.Autor.Apellido,
+                        Codigo = entity.Autor.Codigo,
+                        Descripcion = entity.Autor.Descripcion
+                    };
+                    autors = _autorRepository.Create(autors);
+                }
+
+                LibroAutor libroAutor = new LibroAutor
+                {
+                    IdLibro = libro.IdLibro,
+                    IdAutor = autors.IdAutor
+                };
+                _libroAutorRepository.Create(libroAutor);
+            }
+            else
+            {
+                Autor autors = await _autorRepository.GetByIdAsync(entity.Autor.IdAutor);
+
+                if (!string.IsNullOrEmpty(entity.Autor.Nombre))
+                {
+                    autors.Nombre = entity.Autor.Nombre;
+                }
+
+                if (!string.IsNullOrEmpty(entity.Autor.Apellido))
+                {
+                    autors.Apellido = entity.Autor.Apellido;
+                }
+
+                if (entity.Autor.Codigo != null)
+                {
+                    autors.Codigo = entity.Autor.Codigo;
+                }
+
+                if (!string.IsNullOrEmpty(entity.Autor.Descripcion))
+                {
+                    autors.Descripcion = entity.Autor.Descripcion;
+                }
+                _autorRepository.Update(autors);
+                // Crear la relación en la tabla intermedia LibroAutor
+                LibroAutor libroAutor = new LibroAutor
+                {
+                    IdLibro = libro.IdLibro,
+                    IdAutor = autors.IdAutor
+                };
+                _libroAutorRepository.Create(libroAutor);
+            }
+
+            // Precios
+            Precio precios = new Precio
+            {
+                PrecioVenta = precioVenta,
+                PorcUtilidad = null,
+                IdLibro = libro.IdLibro,
+                IdPublicoObjetivo = 1
+            };
+            _PrecioRepository.Create(precios);
+
+            // Kardex
+            Kardex kardex = new Kardex
+            {
+                IdSucursal = 1,
+                IdLibro = libro.IdLibro,
+                CantidadSalida = 0,
+                CantidadEntrada = 0,
+                Stock = stock,
+                UltPrecioCosto = 0,
+            };
+            _KardexRepository.Create(kardex);
+
+            return _Mapper.Map<LibroResponse>(libro);
+        }
+
+
+        public async Task<LibroResponse> UpdateLib(LibroconautorRequest entity, IFormFile? imageFile, decimal precioVenta, int stock)
+        {
+            // Obtener el libro desde el repositorio
+            var libro = await _ILibroRepository.GetByIdAsync(entity.Libro.IdLibro);
+            Console.WriteLine($"Recibiendo ID: {entity.Libro.IdLibro}");
+            if (libro == null)
+            {
+                throw new Exception("Libro no encontrado");
+            }
+
+            // Mapear los cambios desde el request hacia el libro
+            libro.Titulo = entity.Libro.Titulo;
+            libro.Isbn = entity.Libro.Isbn;
+            libro.Tamanno = entity.Libro.Tamanno;
+            libro.Descripcion = entity.Libro.Descripcion;
+            libro.Condicion = entity.Libro.Condicion;
+            libro.Impresion = entity.Libro.Impresion;
+            libro.TipoTapa = entity.Libro.TipoTapa;
+            libro.Estado = entity.Libro.Estado;
+
+            // Actualizar el libro en la base de datos
+            _ILibroRepository.Update(libro);
+            // Manejar la imagen si se proporciona una nueva
+            if (imageFile != null)
+            {
+                // Subir la nueva imagen a Firebase Storage
+                string newImageUrl = await _firebaseStorageService.UploadFileAsync(imageFile, "libros");
+
+                // Actualizar la URL de la imagen en el libro
+                libro.Imagen = newImageUrl;
+                _ILibroRepository.Update(libro);
+            }
+
+            // Actualizar el precio
+            var precio = await _PrecioRepository.GetByIdAsync(libro.IdLibro);
+            if (precio != null)
+            {
+                precio.PrecioVenta = precioVenta;
+                _PrecioRepository.Update(precio);
+            }
+            else
+            {
+                // Si no existe un precio, crear uno nuevo
+                Precio nuevoPrecio = new Precio
+                {
+                    PrecioVenta = precioVenta,
+                    IdLibro = libro.IdLibro,
+                    IdPublicoObjetivo = 1  // Si es necesario, ajustar
+                };
+                _PrecioRepository.Create(nuevoPrecio);
+            }
+
+            // Actualizar el stock
+            var kardex = await _KardexRepository.GetByIdAsync(libro.IdLibro);
+            if (kardex != null)
+            {
+                kardex.Stock = stock;
+                _KardexRepository.Update(kardex);
+            }
+            else
+            {
+                // Si no existe un kardex, crear uno nuevo
+                Kardex nuevoKardex = new Kardex
+                {
+                    IdLibro = libro.IdLibro,
+                    Stock = stock,
+                    IdSucursal = 1,  // Ajustar según sea necesario
+                    CantidadEntrada = 0,
+                    CantidadSalida = 0,
+                    UltPrecioCosto = 0
+                };
+                _KardexRepository.Create(nuevoKardex);
+            }
+            // Mapear el libro actualizado a la respuesta
+            return _Mapper.Map<LibroResponse>(libro);
+        }
+
+        public async Task<(List<Libro>, int)> FiltrarLibrosAsync(bool? estado, string titulo, int page, int pageSize)
+        {
+            return await _ILibroRepository.FiltrarLibrosAsync(estado, titulo, page, pageSize);
+        }
+
+        public async Task<bool> CambiarEstadoLibro(int libroId)
+        {
+            return await _ILibroRepository.CambiarEstadoLibro(libroId);
         }
     }
 

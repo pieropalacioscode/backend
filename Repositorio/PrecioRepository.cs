@@ -28,5 +28,9 @@ namespace Repository
             .FirstOrDefaultAsync();
         }
 
+        public async Task<Precio> GetByIdAsync(int id)
+        {
+            return await dbSet.FirstOrDefaultAsync(p => p.IdLibro == id);
+        }
     }
 }

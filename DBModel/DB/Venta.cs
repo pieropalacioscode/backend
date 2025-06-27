@@ -23,7 +23,7 @@ public partial class Venta
     public int IdCaja { get; set; }
 
     public string? TipoPago { get; set; }
-    [JsonIgnore]
+
     public virtual ICollection<DetalleVenta> DetalleVenta { get; set; } = new List<DetalleVenta>();
     [JsonIgnore]
     public virtual Caja IdCajaNavigation { get; set; } = null!;

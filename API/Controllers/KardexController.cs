@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using Bussines;
+using DBModel.DB;
 using IBussines;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Models.RequestResponse;
 
 namespace API.Controllers
@@ -24,6 +26,7 @@ namespace API.Controllers
             _IKardexBussines = new KardexBussines(_Mapper);
         }
         #endregion
+
 
         #region crud methods
         /// <summary>
@@ -84,6 +87,8 @@ namespace API.Controllers
             int res = _IKardexBussines.Delete(id);
             return Ok(res);
         }
+
         #endregion
+
     }
 }

@@ -30,7 +30,10 @@ namespace Repository
                 .ThenInclude(p => p.IdPublicoObjetivoNavigation)
                 .FirstOrDefaultAsync();
         }
-
+        public async Task<Libro> GetByIdAsync(object id)
+        {
+            return await dbSet.Where(libro => libro.IdLibro == (int)id).FirstOrDefaultAsync();
+        }
         public async Task<List<Precio>> GetPreciosByLibroId(int libroId)
 
         {
@@ -225,7 +228,44 @@ namespace Repository
         }
 
 
+        public async Task<(List<Libro>, int)> FiltrarLibrosAsync(bool? estado, string titulo, int page, int pageSize)
+        {
+            var query = dbSet.AsQueryable();
 
+            // Filtrar por estado si se proporciona
+            if (estado.HasValue)
+            {
+                query = query.Where(l => l.Estado == estado.Value);
+            }
+
+            // Filtrar por título si se proporciona
+            if (!string.IsNullOrWhiteSpace(titulo))
+            {
+                query = query.Where(l => EF.Functions.Like(l.Titulo, $"%{titulo}%"));
+            }
+
+            int totalItems = await query.CountAsync();
+            var libros = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (libros, totalItems);
+        }
+
+        public async Task<bool> CambiarEstadoLibro(int libroId)
+        {
+            var libro = await dbSet.FindAsync(libroId);
+            if (libro == null)
+            {
+                return false; // Retornar false si el libro no existe
+            }
+
+            libro.Estado = false; // Alternar estado
+            await db.SaveChangesAsync();
+
+            return true; // Retornar true si se actualizó correctamente
+        }
     }
 }  
 

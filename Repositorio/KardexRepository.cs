@@ -54,5 +54,19 @@ namespace Repository
             db.SaveChanges();
         }
 
+
+        public List<Kardex> GetLibrosConStock()
+        {
+            return dbSet
+                .Include(k => k.IdLibroNavigation)
+                .Where(k => k.Stock != null)
+                .ToList();
+        }
+
+        public async Task<Kardex> GetByIdAsync(int id)
+        {
+            return await dbSet.FirstOrDefaultAsync(k => k.IdLibro == id);
+        }
+
     }
 }

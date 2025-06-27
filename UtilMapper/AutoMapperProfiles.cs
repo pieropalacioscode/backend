@@ -91,6 +91,9 @@ namespace UtilMapper
 
             CreateMap<DetallePedidoProveedor, DetallePedidoProveedorRequest>().ReverseMap();
             CreateMap<DetallePedidoProveedor, DetallePedidoProveedorResponse>().ReverseMap();
+
+            CreateMap<Notificacion, NotificacionRequest>().ReverseMap();
+            CreateMap<Notificacion,NotificacionResponse>().ReverseMap();
         }
 
     }

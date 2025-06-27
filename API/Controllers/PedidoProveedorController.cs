@@ -2,6 +2,7 @@
 using Bussines;
 using DBModel.DB;
 using IBussines;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models.RequestResponse;
@@ -11,6 +12,7 @@ namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    //[Authorize]
     public class PedidoProveedorController : ControllerBase
     {
         #region Declaracion de vcariables generales

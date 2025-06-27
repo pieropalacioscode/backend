@@ -134,18 +134,20 @@ namespace Bussines
             {
         new Claim(JwtRegisteredClaimNames.Sub, payload.Subject),
         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
+        new Claim(JwtRegisteredClaimNames.Iat,
+        new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
+        ClaimValueTypes.Integer64), // ✅ Tipo correcto
         new Claim("UserId", payload.Subject),
-        new Claim("Email", payload.Email),
-        // Agregar más reclamaciones según sea necesario
+        new Claim("Email", payload.Email)
     };
 
             var token = new JwtSecurityToken(
-                _configuration["Jwt:Issuer"],
-                _configuration["Jwt:Audience"],
-                claims,
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(int.Parse(_configuration["Jwt:TimeJWTMin"])),
-                signingCredentials: signIn);
+                signingCredentials: signIn
+            );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }

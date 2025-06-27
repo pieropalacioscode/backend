@@ -1,3 +1,4 @@
+﻿using Models.Shared.Hubs;
 using AutoMapper;
 using Bussines;
 using Constantes;
@@ -22,10 +23,26 @@ var env = builder.Environment;
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        builder => builder.AllowAnyOrigin()
-                          .AllowAnyMethod()
-                          .AllowAnyHeader());
+    if (env.IsDevelopment())
+    {
+        // Para desarrollo: más permisivo
+        options.AddPolicy("AllowAll",
+            builder => builder
+                .SetIsOriginAllowed(_ => true) // Permite cualquier origen
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials()); // Necesario para SignalR
+    }
+    else
+    {
+        // Para producción: más restrictivo
+        options.AddPolicy("AllowAll",
+            builder => builder
+                .WithOrigins("https://tudominio.com") // Cambia por tu dominio
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials());
+    }
 });
 
 /* PARA IMPLEMENTAR NUESTROS PROTOCOLOS DE SEGURIDAD ==> JWT */
@@ -41,12 +58,30 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            
+            return Task.CompletedTask;
+        },
+        OnTokenValidated = context =>
+        {
+            
+            return Task.CompletedTask;
+        }
+    };
 });
+
 
 // Agregar otros servicios al contenedor.
 builder.Services.AddControllers();
-
-// Configuraci�n de Swagger/OpenAPI.
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true; // Para debugging
+});
+// Configuración de Swagger/OpenAPI.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -54,7 +89,7 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "SISTEMA DE LIBRERIA",
         Version = "v1",
-        Description = "Documentaci�n de los servicios para el sistema de Libreria Saber",
+        Description = "Documentación de los servicios para el sistema de Libreria Saber",
         Contact = new OpenApiContact
         {
             Name = "Piero Palacios",
@@ -86,6 +121,13 @@ builder.Services.AddScoped<IPedidoProveedorRepository, PedidoProveedorRepository
 builder.Services.AddScoped<IDetallePedidoProveedorRepository, DetallePedidoProveedorRepository>();
 builder.Services.AddScoped<IFirebaseStorageService, FirebaseStorageService>();
 
+builder.Services.AddScoped<INotificacionBussines, NotificacionBussines>();
+builder.Services.AddScoped<INotificacionRepository, NotificacionRepository>();
+builder.Services.AddHostedService<StockNotificationService>();
+builder.Services.AddScoped<ILibroAutorRepository, LibroAutorRepository>();
+builder.Services.AddScoped<IAutorRepository, AutorRepository>();
+builder.Services.AddScoped<IPrecioRepository, PrecioRepository>();
+
 
 
 
@@ -102,7 +144,15 @@ app.UseSwaggerUI();
 
 app.UseStaticFiles();
 app.UseHttpsRedirection();
+app.UseRouting();
 app.UseCors("AllowAll");
+app.UseAuthentication();
 app.UseAuthorization();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+    endpoints.MapHub<NotificacionHub>("/hubs/notificaciones"); 
+});
 app.MapControllers();
+
 app.Run();

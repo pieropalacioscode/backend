@@ -26,5 +26,9 @@ namespace IBussines
         Task<PaginacionResponse<LibroDetalleResponse>> GetLibrosConDetallePaginadoAsync(int pagina, int cantidad);
         Task<PaginacionResponse<InventarioResponse>> GetInventarioPaginadoAsync(int pagina, int cantidad);
         Task<List<InventarioResponse>> BuscarEnInventario(string query);
+        Task<LibroResponse> CreateImagenDetalle(LibroconautorRequest entity, IFormFile imageFile, decimal precioVenta, int stock);
+        Task<LibroResponse> UpdateLib(LibroconautorRequest entity, IFormFile? imageFile, decimal precioVenta, int stock);
+        Task<(List<Libro>, int)> FiltrarLibrosAsync(bool? estado, string titulo, int page, int pageSize);
+        Task<bool> CambiarEstadoLibro(int libroId);
     }
 }
