@@ -13,5 +13,6 @@
 
         public string? DescripcionRecepcion { get; set; }
         public string? Imagen { get; set; }
+        public int? IdPersona { get; set; }
     }
 }

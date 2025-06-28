@@ -16,6 +16,8 @@ namespace Models.RequestResponse
         public string Proveedor { get; set; } = null!;
         public int idProveedor { get; set; }
         public string? Imagen { get; set; }
+        public int? IdPersona { get; set; }
+        public string? NombreCliente { get; set; }
         public List<LibroPedidoDetalleDto> Detalles { get; set; } = new();
     }
 

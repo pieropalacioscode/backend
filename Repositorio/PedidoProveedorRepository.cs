@@ -31,11 +31,12 @@ namespace Repository
         public async Task<PedidoDetalleResponse?> getPedidoconDetalle(int id)
         {
             var pedido = await dbSet
-        .Where(p => p.Id == id)
-        .Include(p => p.DetallePedidoProveedors)
-            .ThenInclude(d => d.IdLibroNavigation)
-        .Include(p => p.IdProveedorNavigation)
-        .FirstOrDefaultAsync();
+                .Where(p => p.Id == id)
+                .Include(p => p.DetallePedidoProveedors)
+                    .ThenInclude(d => d.IdLibroNavigation)
+                .Include(p => p.IdProveedorNavigation)
+                .Include(p => p.IdPersonaNavigation) // 👈 incluir al cliente
+                .FirstOrDefaultAsync();
 
             if (pedido == null) return null;
 
@@ -48,11 +49,18 @@ namespace Repository
                 DescripcionRecepcion = pedido.DescripcionRecepcion,
                 Proveedor = pedido.IdProveedorNavigation.RazonSocial,
                 idProveedor = pedido.IdProveedor,
-                Imagen=pedido.Imagen,
+                Imagen = pedido.Imagen,
+
+                // NUEVO
+                IdPersona = pedido.IdPersona,
+                NombreCliente = pedido.IdPersonaNavigation != null
+                    ? $"{pedido.IdPersonaNavigation.Nombre} {pedido.IdPersonaNavigation.ApellidoPaterno}"
+                    : null,
+
                 Detalles = pedido.DetallePedidoProveedors.Select(d => new LibroPedidoDetalleDto
                 {
                     Id = d.Id,
-                    idLibro =d.IdLibro,
+                    idLibro = d.IdLibro,
                     Titulo = d.IdLibroNavigation.Titulo,
                     Isbn = d.IdLibroNavigation.Isbn,
                     Imagen = d.IdLibroNavigation.Imagen,
@@ -62,6 +70,7 @@ namespace Repository
                 }).ToList()
             };
         }
+
 
 
         public async Task<PaginacionResponse<PedidoDetalleResponse>> GetPedidosPorFechaPaginado(DateTime fecha, int pagina, int cantidad)

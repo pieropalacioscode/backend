@@ -94,28 +94,22 @@ namespace API.Controllers
         {
             int res = _IPedidoProveedorBussines.Delete(id);
             return Ok(res);
-        } 
+        }
 
         [HttpPost("create-with-details")]
-        public IActionResult CrearPedidoConDetalles([FromBody] PedidoProveedorConDetalleRequest request)
+        public async Task<IActionResult> CrearPedidoConDetalles([FromBody] PedidoProveedorConDetalleRequest request)
         {
             try
             {
-                var pedidoCreado = _IPedidoProveedorBussines.Create(request.Pedido);
-                
-                foreach (var detalle in request.Detalles)
-                {
-                    detalle.IdPedidoProveedor = pedidoCreado.Id; // asignar FK
-                    _detallePedidoProveedorBussines.Create(detalle);
-                }
-
-                return Ok(new { success = true, data = pedidoCreado });
+                var resultado = await _IPedidoProveedorBussines.CrearPedidoConDetalles(request);
+                return Ok(new { success = true, message = resultado });
             }
             catch (Exception ex)
             {
                 return BadRequest(new { success = false, message = ex.Message });
             }
         }
+
 
         [HttpPut("confirmar-recepcion-con-imagen")]
         public async Task<IActionResult> ConfirmarRecepcionConImagen(

@@ -107,6 +107,7 @@ namespace API.Controllers
             return Ok(vpersona);
 
         }
+
         [HttpPost("verificar")]
         public IActionResult VerificarUsuario([FromBody] PersonaRequest persona)
         {
