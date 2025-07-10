@@ -22,17 +22,18 @@ namespace API.Controllers
         #region Declaracion de vcariables generales
         public readonly ILibroBussines _ILibroBussines = null;
         public readonly IMapper _Mapper;
+        public readonly IExcelLibroService _excelLibroService;
 
 
         private readonly IConfiguration _configuration;
         #endregion
 
         #region constructor 
-        public LibroController(IMapper mapper, ILibroBussines libroBussines)
+        public LibroController(IMapper mapper, ILibroBussines libroBussines, IExcelLibroService excelLibroService)
         {
             _Mapper = mapper;
             _ILibroBussines = libroBussines;
-            
+            _excelLibroService = excelLibroService;
         }
         #endregion
 
@@ -313,6 +314,32 @@ namespace API.Controllers
             var resultado = await _ILibroBussines.ListarPorProveedorPaginadoAsync(idProveedor, pagina, cantidad);
             return Ok(resultado);
         }
+
+        [HttpPost("cargar-excel-libros")]
+        public async Task<IActionResult> CargarLibrosDesdeExcel(IFormFile archivoExcel)
+        {
+            if (archivoExcel == null || archivoExcel.Length == 0)
+                return BadRequest("Archivo Excel no proporcionado");
+
+            try
+            {
+                // 1. Leer los datos desde el Excel
+                var listaLibros = await _excelLibroService.LeerExcelLibros(archivoExcel);
+
+                if (listaLibros == null || !listaLibros.Any())
+                    return BadRequest("No se encontraron libros en el archivo");
+
+                // 2. Crear libros en la base de datos
+                var librosCreados = await _ILibroBussines.CrearLibrosDesdeExcel(listaLibros);
+
+                return Ok(librosCreados);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al procesar el archivo: {ex.Message}");
+            }
+        }
+
     }
 }
     

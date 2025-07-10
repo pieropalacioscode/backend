@@ -232,7 +232,7 @@ namespace Bussines
             // --- Autor ---
             if (entity.Autor.Nombre != null)
             {
-                Autor autors = await _autorRepository.GetByName(entity.Autor.Nombre);
+                Autor autors = await _autorRepository.GetByName(entity.Autor.Nombre,entity.Autor.Apellido);
                 if (autors == null)
                 {
                     autors = new Autor
@@ -411,6 +411,77 @@ namespace Bussines
                 TotalPaginas = resultado.TotalPaginas
             };
         }
+
+        //Crear libros desde un exel
+        public async Task<List<LibroResponse>> CrearLibrosDesdeExcel(List<LibroExcelRequest> librosExcel)
+        {
+            var librosCreados = new List<LibroResponse>();
+
+            foreach (var item in librosExcel)
+            {
+                // Mapear a entidad Libro
+                var libro = _Mapper.Map<Libro>(item.Libro);
+
+                // No hay imagen
+                libro.Imagen = null;
+
+                // Crear libro en la BD
+                libro = _ILibroRepository.Create(libro);
+
+                // --- Autor ---
+                Autor autor = null;
+
+                if (!string.IsNullOrWhiteSpace(item.Autor?.Nombre))
+                {
+                    autor = await _autorRepository.GetByName(item.Autor.Nombre,item.Autor.Apellido);
+
+                    if (autor == null)
+                    {
+                        autor = new Autor
+                        {
+                            Nombre = item.Autor.Nombre,
+                            Apellido = item.Autor.Apellido,
+                            Codigo = item.Autor.Codigo,
+                            Descripcion = item.Autor.Descripcion
+                        };
+                        autor = _autorRepository.Create(autor);
+                    }
+
+                    _libroAutorRepository.Create(new LibroAutor
+                    {
+                        IdLibro = libro.IdLibro,
+                        IdAutor = autor.IdAutor
+                    });
+                }
+
+                // --- Precio ---
+                var precio = new Precio
+                {
+                    IdLibro = libro.IdLibro,
+                    IdPublicoObjetivo = 1,
+                    PrecioVenta = item.PrecioVenta,
+                    PorcUtilidad = null
+                };
+                _PrecioRepository.Create(precio);
+
+                // --- Kardex ---
+                var kardex = new Kardex
+                {
+                    IdSucursal = 1,
+                    IdLibro = libro.IdLibro,
+                    Stock = item.Stock,
+                    CantidadEntrada = 0,
+                    CantidadSalida = 0,
+                    UltPrecioCosto = 0
+                };
+                _KardexRepository.Create(kardex);
+
+                librosCreados.Add(_Mapper.Map<LibroResponse>(libro));
+            }
+
+            return librosCreados;
+        }
+
 
     }
 

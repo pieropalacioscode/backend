@@ -128,6 +128,7 @@ builder.Services.AddScoped<ILibroAutorRepository, LibroAutorRepository>();
 builder.Services.AddScoped<IAutorRepository, AutorRepository>();
 builder.Services.AddScoped<IPrecioRepository, PrecioRepository>();
 builder.Services.AddScoped<IGPTIAservice,GPTIAservice>();
+builder.Services.AddScoped<IExcelLibroService, ExcelLibroService>();
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
 

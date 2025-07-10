@@ -11,4 +11,13 @@ namespace Models.RequestResponse
         public LibroRequest Libro { get; set; }
         public AutorRequest? Autor { get; set; }
     }
+
+    public class LibroExcelRequest
+    {
+        public LibroRequest Libro { get; set; }
+        public AutorRequest? Autor { get; set; }
+        public decimal PrecioVenta { get; set; }
+        public int Stock { get; set; }
+    }
+
 }

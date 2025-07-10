@@ -9,5 +9,6 @@ namespace IService
     public interface IGPTIAservice
     {
         Task<string> ObtenerDatosLibroDesdeGPT(string isbn);
+        Task<string> ObtenerLibroDesdeGoogleBooks(string isbn);
     }
 }

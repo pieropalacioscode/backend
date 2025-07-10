@@ -97,5 +97,27 @@ namespace Models.RequestResponse
                 // Añade todas las categorias que necesitas
              };
         }
+
+
+        public class RespuestaLibro
+        {
+            public Libro libro { get; set; }
+            public Autor autor { get; set; }
+        }
+
+        public class Libro
+        {
+            public string titulo { get; set; }
+            public string isbn { get; set; }
+            public string descripcion { get; set; }
+            public bool estado { get; set; }
+        }
+
+        public class Autor
+        {
+            public string nombre { get; set; }
+            public string apellido { get; set; }
+        }
+
     }
 }

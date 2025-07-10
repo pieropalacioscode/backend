@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Service
@@ -13,8 +14,7 @@ namespace Service
     {
 
         private readonly HttpClient _httpClient;
-        private readonly string apiKey = "OPENAI_API_KEY";
-
+        private readonly string apiKey = "--";
         public GPTIAservice()
         {
             _httpClient = new HttpClient();
@@ -26,22 +26,22 @@ namespace Service
         public async Task<string> ObtenerDatosLibroDesdeGPT(string isbn)
         {
             string prompt = $@"
-Eres un asistente experto en libros. A partir del ISBN '{isbn}', responde en el siguiente formato JSON:
+                Eres un asistente experto en libros. A partir del ISBN '{isbn}', responde en el siguiente formato JSON:
 
-{{
-  ""libro"": {{
-    ""titulo"": """",
-    ""isbn"": """",
-    ""descripcion"": """",
-    ""estado"": true
-  }},
-  ""autor"": {{
-    ""nombre"": """",
-    ""apellido"": """"
-  }}
-}}
+                {{
+                  ""libro"": {{
+                    ""titulo"": """",
+                    ""isbn"": """",
+                    ""descripcion"": """",
+                    ""estado"": true
+                  }},
+                  ""autor"": {{
+                    ""nombre"": """",
+                    ""apellido"": """"
+                  }}
+                }}
 
-Si no encuentras información del libro, responde exactamente así: {{ ""error"": ""Libro no encontrado"" }}.";
+                Si no encuentras información del libro, responde exactamente así: {{ ""error"": ""Libro no encontrado"" }}.";
 
             var payload = new
             {
@@ -68,10 +68,52 @@ Si no encuentras información del libro, responde exactamente así: {{ ""error""
             if (string.IsNullOrWhiteSpace(text))
             {
                 return "{ \"error\": \"Respuesta vacía desde OpenAI\" }";
+
             }
             Console.WriteLine("Respuesta cruda de GPT:");
             Console.WriteLine(text);
             return text;
         }
+
+        public async Task<string> ObtenerLibroDesdeGoogleBooks(string isbn)
+        {
+            var url = $"https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}";
+            using var http = new HttpClient();
+            var response = await http.GetStringAsync(url);
+
+            var data = JsonDocument.Parse(response);
+
+            // ✅ Verifica si "items" existe antes de accederlo
+            if (!data.RootElement.TryGetProperty("items", out var items) || items.GetArrayLength() == 0)
+            {
+                return @"{ ""error"": ""Libro no encontrado"" }";
+            }
+
+            var volumeInfo = items[0].GetProperty("volumeInfo");
+
+            var titulo = volumeInfo.GetProperty("title").GetString();
+            var descripcion = volumeInfo.TryGetProperty("description", out var desc) ? desc.GetString() : "Sin descripción";
+            var autores = volumeInfo.TryGetProperty("authors", out var autoresProp) && autoresProp.GetArrayLength() > 0
+                ? autoresProp[0].GetString()
+                : "Desconocido";
+
+            var nombres = autores.Split(' ', 2);
+
+            return $@"
+    {{
+      ""libro"": {{
+        ""titulo"": ""{titulo}"",
+        ""isbn"": ""{isbn}"",
+        ""descripcion"": ""{descripcion}"",
+        ""estado"": true
+      }},
+      ""autor"": {{
+        ""nombre"": ""{nombres[0]}"",
+        ""apellido"": ""{(nombres.Length > 1 ? nombres[1] : "")}""
+      }}
+    }}";
+        }
+
+
     }
 }

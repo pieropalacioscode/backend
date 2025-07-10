@@ -31,5 +31,6 @@ namespace IBussines
         Task<(List<Libro>, int)> FiltrarLibrosAsync(bool? estado, string titulo, int page, int pageSize);
         Task<bool> CambiarEstadoLibro(int libroId);
         Task<PaginacionResponse<LibroResponse>> ListarPorProveedorPaginadoAsync(int idProveedor, int pagina, int cantidad);
+        Task<List<LibroResponse>> CrearLibrosDesdeExcel(List<LibroExcelRequest> librosExcel);
     }
 }

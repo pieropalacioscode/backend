@@ -22,9 +22,11 @@ namespace Repository
             return await dbSet.FindAsync(id);
         }
 
-        public async Task<Autor> GetByName(string nombre)
+        public async Task<Autor> GetByName(string nombre, string apellido)
         {
-            return await dbSet.FirstOrDefaultAsync(autor => autor.Nombre.ToLower() == nombre.ToLower());
+            return await dbSet.FirstOrDefaultAsync(autor =>
+                autor.Nombre.ToLower() == nombre.ToLower() &&
+                autor.Apellido.ToLower() == apellido.ToLower());
         }
     }
 }
