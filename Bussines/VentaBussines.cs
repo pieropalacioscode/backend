@@ -186,6 +186,7 @@ namespace Bussines
                 IdPersona = v.IdPersona,
                 IdUsuario = v.IdUsuario,
                 TipoPago = v.TipoPago,
+                IdCaja=v.IdCaja
             });
         }
 

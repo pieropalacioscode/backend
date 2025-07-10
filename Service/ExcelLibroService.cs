@@ -14,7 +14,7 @@ namespace Service
     {
         public ExcelLibroService()
         {
-            ExcelPackage.License.SetNonCommercialPersonal("Jose Salazar"); // IMPORTANTE
+            ExcelPackage.License.SetNonCommercialPersonal("Piero Palacios"); // IMPORTANTE
         }
 
 

@@ -25,10 +25,9 @@ public partial class Venta
     public string? TipoPago { get; set; }
 
     public virtual ICollection<DetalleVenta> DetalleVenta { get; set; } = new List<DetalleVenta>();
-    [JsonIgnore]
     public virtual Caja IdCajaNavigation { get; set; } = null!;
-    [JsonIgnore]
+
     public virtual Persona IdPersonaNavigation { get; set; } = null!;
-    [JsonIgnore]
+
     public virtual Usuario IdUsuarioNavigation { get; set; } = null!;
 }
