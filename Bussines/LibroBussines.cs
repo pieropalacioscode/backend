@@ -232,7 +232,7 @@ namespace Bussines
             // --- Autor ---
             if (entity.Autor.Nombre != null)
             {
-                Autor autors = await _autorRepository.GetByName(entity.Autor.Nombre,entity.Autor.Apellido);
+                Autor autors = await _autorRepository.GetByNameApelAsync(entity.Autor.Nombre,entity.Autor.Apellido);
                 if (autors == null)
                 {
                     autors = new Autor
@@ -433,7 +433,7 @@ namespace Bussines
 
                 if (!string.IsNullOrWhiteSpace(item.Autor?.Nombre))
                 {
-                    autor = await _autorRepository.GetByName(item.Autor.Nombre,item.Autor.Apellido);
+                    autor = await _autorRepository.GetByNameApelAsync(item.Autor.Nombre,item.Autor.Apellido);
 
                     if (autor == null)
                     {
