@@ -172,11 +172,11 @@ namespace Bussines
             numeroActual++;
             return $"{prefijo}{numeroActual.ToString("D4")}";
         }
-        public async Task<IEnumerable<VentaRequest>> ObtenerVentasPorFechaAsync(DateTime fechaInicio, DateTime fechaFin)
+        public async Task<List<VentaResponse>> ObtenerVentasPorFechaAsync(DateTime fechaInicio, DateTime fechaFin)
         {
             var ventas = await _IVentaRepository.ObtenerVentasPorFechaAsync(fechaInicio, fechaFin);
 
-            return ventas.Select(v => new VentaRequest
+            return ventas.Select(v => new VentaResponse
             {
                 IdVentas = v.IdVentas,
                 TotalPrecio = v.TotalPrecio,
@@ -185,10 +185,13 @@ namespace Bussines
                 NroComprobante = v.NroComprobante,
                 IdPersona = v.IdPersona,
                 IdUsuario = v.IdUsuario,
+                IdCaja = v.IdCaja,
                 TipoPago = v.TipoPago,
-                IdCaja=v.IdCaja
-            });
+                Descuento = v.Descuento,
+                Vuelto = v.Vuelto
+            }).ToList();
         }
+
 
         public async Task<(List<VentaResponse>, int)> GetVentaPaginados(int page, int pageSize)
         {

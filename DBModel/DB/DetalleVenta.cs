@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace DBModel.DB;
 
@@ -24,6 +25,6 @@ public partial class DetalleVenta
     public decimal? Descuento { get; set; }
 
     public virtual Libro IdLibroNavigation { get; set; } = null!;
-
+    [JsonIgnore]
     public virtual Venta? IdVentasNavigation { get; set; }
 }

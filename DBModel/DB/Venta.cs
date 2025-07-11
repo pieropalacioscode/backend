@@ -27,7 +27,7 @@ public partial class Venta
     public decimal? Vuelto { get; set; }
     public virtual ICollection<DetalleVenta> DetalleVenta { get; set; } = new List<DetalleVenta>();
     public virtual Caja IdCajaNavigation { get; set; } = null!;
-
+    [JsonIgnore]
     public virtual Persona IdPersonaNavigation { get; set; } = null!;
 
     public virtual Usuario IdUsuarioNavigation { get; set; } = null!;

@@ -113,14 +113,14 @@ namespace Repository
             var fechaFin = fechaInicio.AddMonths(1).AddDays(-1); // último día del mes
 
             const string query = @"
-        SELECT 
-            FORMAT(v.Fecha_Venta, 'yyyy-MM') AS MesAño,
-            SUM(d.Importe) AS TotalIngresos
-        FROM Ventas v
-        INNER JOIN Detalle_Ventas d ON v.Id_Ventas = d.id_Ventas
-        WHERE v.Fecha_Venta BETWEEN @fechaInicio AND @fechaFin
-        GROUP BY FORMAT(v.Fecha_Venta, 'yyyy-MM')
-        ORDER BY MesAño";
+                SELECT 
+                    FORMAT(v.Fecha_Venta, 'yyyy-MM') AS MesAño,
+                    SUM(d.Importe) AS TotalIngresos
+                FROM Ventas v
+                INNER JOIN Detalle_Ventas d ON v.Id_Ventas = d.id_Ventas
+                WHERE v.Fecha_Venta BETWEEN @fechaInicio AND @fechaFin
+                GROUP BY FORMAT(v.Fecha_Venta, 'yyyy-MM')
+                ORDER BY MesAño";
 
             var ingresosMensuales = new List<IngresoMensualResponse>();
 
@@ -164,23 +164,23 @@ namespace Repository
             };
 
             string query = $@"
-SELECT 
-    l.IdLibro,
-    l.Titulo,
-    ISNULL(SUM(d.Cantidad), 0) AS TotalVendidos,
-    k.Stock AS StockActual,
-    CASE 
-        WHEN (k.Stock + ISNULL(SUM(d.Cantidad), 0)) = 0 THEN 0
-        ELSE CAST(ISNULL(SUM(d.Cantidad), 0) AS FLOAT) / 
-             ((k.Stock + ISNULL(SUM(d.Cantidad), 0)) / 2.0)
-    END AS TasaRotacionAprox
-FROM Libro l
-JOIN Kardex k ON l.IdLibro = k.IdLibro
-LEFT JOIN Detalle_Ventas d ON l.IdLibro = d.IdLibro
-GROUP BY l.IdLibro, l.Titulo, k.Stock
-ORDER BY " + orderByClause + @"
-OFFSET @offset ROWS
-FETCH NEXT @limit ROWS ONLY;";
+                SELECT 
+                    l.IdLibro,
+                    l.Titulo,
+                    ISNULL(SUM(d.Cantidad), 0) AS TotalVendidos,
+                    k.Stock AS StockActual,
+                    CASE 
+                        WHEN (k.Stock + ISNULL(SUM(d.Cantidad), 0)) = 0 THEN 0
+                        ELSE CAST(ISNULL(SUM(d.Cantidad), 0) AS FLOAT) / 
+                             ((k.Stock + ISNULL(SUM(d.Cantidad), 0)) / 2.0)
+                    END AS TasaRotacionAprox
+                FROM Libro l
+                JOIN Kardex k ON l.IdLibro = k.IdLibro
+                LEFT JOIN Detalle_Ventas d ON l.IdLibro = d.IdLibro
+                GROUP BY l.IdLibro, l.Titulo, k.Stock
+                ORDER BY " + orderByClause + @"
+                OFFSET @offset ROWS
+                FETCH NEXT @limit ROWS ONLY;";
 
             using var connection = db.Database.GetDbConnection();
             await connection.OpenAsync();
@@ -222,6 +222,8 @@ FETCH NEXT @limit ROWS ONLY;";
             var resultado = await UtilPaginados.UtilPaginados.CrearPaginadoAsync(query, page, pageSize);
             return resultado;
         }
+
+
 
 
 

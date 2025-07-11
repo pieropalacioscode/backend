@@ -108,5 +108,28 @@ namespace Bussines
         {
             return await _IDetalleVentaRepository.ObtenerProductosMasVendidosAsync(mes, anio);
         }
+
+        public async Task<List<DetalleVentaResponse>> ObtenerDetallesPorIdsVentasAsync(List<int> idsVentas)
+        {
+            var detalles = await _IDetalleVentaRepository.ObtenerDetallesPorIdsVentasAsync(idsVentas);
+            return detalles.Select(d => new DetalleVentaResponse
+            {
+                IdDetalleVentas = d.IdDetalleVentas,
+                IdLibro = d.IdLibro,
+                NombreProducto = d.NombreProducto,
+                PrecioUnit = d.PrecioUnit,
+                Cantidad = d.Cantidad,
+                Importe = d.Importe,
+                IdVentas = d.IdVentas,
+                Estado = d.Estado,
+                Descuento = d.Descuento
+            }).ToList();
+        }
+
+        public async Task<List<DetalleVentaResponse>> ObtenerDetallesPorFechaAsync(DateTime fechaInicio, DateTime fechaFin)
+        {
+            return await _IDetalleVentaRepository.ObtenerDetallesPorFechaAsync(fechaInicio, fechaFin);
+        }
+
     }
 }

@@ -5,6 +5,7 @@ using IBussnies;
 using IService;
 using Microsoft.AspNetCore.Mvc;
 using Models.RequestResponse;
+using UtilPDF;
 
 namespace API.Controllers
 {
@@ -17,14 +18,16 @@ namespace API.Controllers
         public readonly IVentaBussines _IVentaBussines = null;
         public readonly IMapper _Mapper;
         public readonly IEmailService _emailService;
+        public readonly IDetalleVentaBussines _IDetalleVentaBussines;
         #endregion
 
         #region constructor 
-        public VentaController(IMapper mapper,IEmailService emailService)
+        public VentaController(IMapper mapper,IEmailService emailService, IDetalleVentaBussines iDetalleVentaBussines)
         {
             _Mapper = mapper;
             _emailService = emailService;
             _IVentaBussines = new VentaBussines(_Mapper, _emailService);
+            _IDetalleVentaBussines = iDetalleVentaBussines;
         }
         #endregion
 
@@ -193,6 +196,34 @@ namespace API.Controllers
             var paginacion = await _IVentaBussines.GenVentasPaginados(page, pageSize);
             return Ok(paginacion);
         }
+
+
+        [HttpGet("resumen-ingresos")]
+        public async Task<IActionResult> GenerarResumenIngresos(DateTime fecha)
+        {
+            var ventas = await _IVentaBussines.ObtenerVentasPorFechaAsync(fecha, fecha.AddDays(1));
+
+            if (!ventas.Any())
+                return NotFound("No hay ventas para la fecha seleccionada.");
+
+            var idsVentas = ventas.Select(v => v.IdVentas).ToList();
+
+            var detalles = await _IDetalleVentaBussines.ObtenerDetallesPorIdsVentasAsync(idsVentas);
+
+            var detallesPorVenta = detalles
+                .GroupBy(d => d.IdVentas ?? 0)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            var pdf = ResumenIngresoPdfHelper.GenerarResumenIngresos(
+                ventas,
+                detallesPorVenta,
+                vendedor: "",
+                fechaReporte: fecha
+            );
+
+            return File(pdf, "application/pdf", $"Resumen_Ingresos_{fecha:yyyyMMdd}.pdf");
+        }
+
         #endregion
     }
 }

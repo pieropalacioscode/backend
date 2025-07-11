@@ -7,6 +7,7 @@ using IRepository;
 using Microsoft.AspNetCore.Mvc;
 using Models.RequestResponse;
 using Repository;
+using UtilPDF;
 
 namespace API.Controllers
 {
@@ -420,6 +421,27 @@ namespace API.Controllers
             var productos = await _detalleVentaBussines.ObtenerProductosMasVendidosAsync(mes, anio);
             return Ok(productos);
         }
+
+        [HttpGet("reporte-detalle-ventas")]
+        public async Task<IActionResult> GenerarReporteDetalleVentas(DateTime fecha)
+        {
+            var fechaFin = fecha.AddDays(1);
+
+            var detalles = await _IDetalleVentaBussines.ObtenerDetallesPorFechaAsync(fecha, fechaFin);
+
+            if (!detalles.Any())
+                return NotFound("No hay detalles de venta para la fecha seleccionada.");
+
+            var pdfBytes = DetalleVentasPdfHelper.GenerarDetalleVentas(
+                detalles,
+                vendedor: "ADMIN", // puedes cambiar a usuario logueado si usas JWT
+                fechaReporte: fecha,
+                filtroFecha: fecha.ToString("dd/MM/yyyy")
+            );
+
+            return File(pdfBytes, "application/pdf", $"Detalle_Ventas_{fecha:yyyyMMdd}.pdf");
+        }
+
 
         #endregion
     }

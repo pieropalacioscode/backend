@@ -1,4 +1,5 @@
 ﻿using DBModel.DB;
+using DocumentFormat.OpenXml.InkML;
 using IRepository;
 using Microsoft.EntityFrameworkCore;
 using Models.RequestResponse;
@@ -32,24 +33,24 @@ namespace Repository
         public async Task<List<ProductosMasVendidosResponse>> ObtenerProductosMasVendidosAsync(int mes, int anio)
         {
             var query = @"
-WITH VentasMes AS (
-    SELECT 
-        dv.idLibro, 
-        l.Titulo AS nombreProducto, 
-        dv.Cantidad
-    FROM Ventas v
-    INNER JOIN Detalle_Ventas dv ON v.id_Ventas = dv.id_Ventas
-    INNER JOIN Libro l ON dv.idLibro = l.idLibro
-    WHERE MONTH(v.Fecha_Venta) = @Mes
-      AND YEAR(v.Fecha_Venta) = @Anio
-)
-SELECT 
-    idLibro, 
-    nombreProducto, 
-    SUM(Cantidad) AS TotalVendidos
-FROM VentasMes
-GROUP BY idLibro, nombreProducto
-ORDER BY TotalVendidos DESC";
+                WITH VentasMes AS (
+                    SELECT 
+                        dv.idLibro, 
+                        l.Titulo AS nombreProducto, 
+                        dv.Cantidad
+                    FROM Ventas v
+                    INNER JOIN Detalle_Ventas dv ON v.id_Ventas = dv.id_Ventas
+                    INNER JOIN Libro l ON dv.idLibro = l.idLibro
+                    WHERE MONTH(v.Fecha_Venta) = @Mes
+                      AND YEAR(v.Fecha_Venta) = @Anio
+                )
+                SELECT 
+                    idLibro, 
+                    nombreProducto, 
+                    SUM(Cantidad) AS TotalVendidos
+                FROM VentasMes
+                GROUP BY idLibro, nombreProducto
+                ORDER BY TotalVendidos DESC";
 
             var productosMasVendidos = new List<ProductosMasVendidosResponse>();
 
@@ -89,6 +90,33 @@ ORDER BY TotalVendidos DESC";
             return productosMasVendidos;
         }
 
+        public async Task<List<DetalleVenta>> ObtenerDetallesPorIdsVentasAsync(List<int> idsVentas)
+        {
+            return await dbSet
+                .Where(d => idsVentas.Contains(d.IdVentas ?? 0))
+                .ToListAsync();
+        }
+
+        public async Task<List<DetalleVentaResponse>> ObtenerDetallesPorFechaAsync(DateTime fechaInicio, DateTime fechaFin)
+        {
+            var detalles = await dbSet
+                .Where(d => d.IdVentasNavigation.FechaVenta >= fechaInicio && d.IdVentasNavigation.FechaVenta < fechaFin)
+                .Select(d => new DetalleVentaResponse
+                {
+                    IdDetalleVentas = d.IdDetalleVentas,
+                    IdLibro = d.IdLibro,
+                    NombreProducto = d.NombreProducto,
+                    PrecioUnit = d.PrecioUnit,
+                    Cantidad = d.Cantidad,
+                    Importe = d.Importe,
+                    IdVentas = d.IdVentas,
+                    Estado = d.Estado,
+                    Descuento = d.Descuento
+                })
+                .ToListAsync();
+
+            return detalles;
+        }
 
     }
 }
