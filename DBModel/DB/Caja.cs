@@ -19,6 +19,7 @@ public partial class Caja
     public DateTime? FechaCierre { get; set; }
 
     public decimal? SaldoDigital { get; set; }
+
     [JsonIgnore]
     public virtual ICollection<RetiroDeCaja> RetiroDeCajas { get; set; } = new List<RetiroDeCaja>();
     [JsonIgnore]

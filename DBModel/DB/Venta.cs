@@ -23,7 +23,8 @@ public partial class Venta
     public int IdCaja { get; set; }
 
     public string? TipoPago { get; set; }
-
+    public decimal? Descuento { get;set; }
+    public decimal? Vuelto { get; set; }
     public virtual ICollection<DetalleVenta> DetalleVenta { get; set; } = new List<DetalleVenta>();
     public virtual Caja IdCajaNavigation { get; set; } = null!;
 

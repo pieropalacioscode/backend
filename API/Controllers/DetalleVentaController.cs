@@ -218,16 +218,16 @@ namespace API.Controllers
         [HttpPost("registrar-venta-detalle")]
         public async Task<IActionResult> RegistrarVentaYDetalle([FromBody] DatalleCarrito detalleCarrito)
         {
-            // Buscar o registrar persona
+            // 1. Buscar o registrar persona
             var personaExistente = _IPersonaBussines.GetPersonaByDocumento(detalleCarrito.Persona.NumeroDocumento);
             int idPersona;
-            
 
             if (personaExistente == null)
             {
                 var personaCreada = _IPersonaBussines.Create(detalleCarrito.Persona);
                 if (personaCreada == null)
                     return StatusCode(500, "Error al crear la persona");
+
                 idPersona = personaCreada.IdPersona;
             }
             else
@@ -235,14 +235,15 @@ namespace API.Controllers
                 idPersona = personaExistente.IdPersona;
             }
 
-            // Verificar caja del día
+            // 2. Verificar que haya una caja abierta hoy
             var cajaDelDia = _ICajaBussines.RegistrarVentaEnCajaDelDia();
             if (cajaDelDia == null)
                 return BadRequest("Debe abrir una caja para hoy antes de registrar ventas.");
 
-            // Calcular totales y aplicar descuentos
-            decimal totalVenta = 0;
+            // 3. Registrar detalles de los productos y calcular totales
             List<DetalleVentaRequest> listaDetalle = new();
+            decimal subtotalProductos = 0;
+            decimal totalDescuentosProductos = 0;
 
             foreach (var item in detalleCarrito.Items)
             {
@@ -253,11 +254,17 @@ namespace API.Controllers
                 kardexActual.Stock -= item.Cantidad;
                 _kardexRepository.Update(kardexActual);
 
-                decimal descuento = item.Descuento; // ya viene del frontend
-                decimal precioFinal = item.PrecioVenta - descuento;
-                decimal importe = precioFinal * item.Cantidad;
+                // Calcular subtotal del producto sin descuento
+                decimal subtotalProducto = item.PrecioVenta * item.Cantidad;
+                subtotalProductos += subtotalProducto;
 
-                totalVenta += importe;
+                // Acumular descuento por producto
+                decimal descuentoProducto = item.Descuento;
+                totalDescuentosProductos += descuentoProducto;
+
+                // Precio final del producto después del descuento
+                decimal precioFinal = item.PrecioVenta - item.Descuento;
+                decimal importe = precioFinal * item.Cantidad;
 
                 var detalle = new DetalleVentaRequest
                 {
@@ -267,30 +274,76 @@ namespace API.Controllers
                     Cantidad = item.Cantidad,
                     Importe = importe,
                     Estado = "Pendiente",
-                    Descuento = descuento
+                    Descuento = descuentoProducto
                 };
+
                 listaDetalle.Add(detalle);
             }
+
+            // 4. Calcular y validar totales
+            decimal subtotalDespuesDescuentosProductos = subtotalProductos - totalDescuentosProductos;
+            decimal descuentoVenta = detalleCarrito.descuento ?? 0;
+
+            // Validar que el totalAmount enviado coincida con el calculado (productos con descuentos aplicados)
+            if (Math.Round(detalleCarrito.TotalAmount, 2) != Math.Round(subtotalDespuesDescuentosProductos, 2))
+            {
+                return BadRequest(new
+                {
+                    message = "El totalAmount no coincide con la suma de productos con descuentos",
+                    totalAmountEnviado = detalleCarrito.TotalAmount,
+                    totalCalculado = subtotalDespuesDescuentosProductos,
+                    subtotalProductos,
+                    totalDescuentosProductos,
+                    detalle = "totalAmount debe ser: Subtotal productos - Descuentos productos"
+                });
+            }
+
+            // El total final para cobrar es totalAmount menos el descuento por venta
+            decimal totalFinalVenta = detalleCarrito.TotalAmount - descuentoVenta;
+
+            // 5. Validación de consistencia entre montos recibidos y total final de venta
+            decimal totalVenta = totalFinalVenta; // El monto real que debe cobrar
+            decimal totalRecibido = (detalleCarrito.EfectivoRecibido ?? 0) + (detalleCarrito.MontoDigital ?? 0);
+            decimal vuelto = detalleCarrito.vuelto ?? 0;
+            decimal totalEsperado = totalRecibido - vuelto;
+
+            if (Math.Round(totalVenta, 2) != Math.Round(totalEsperado, 2))
+            {
+                return BadRequest(new
+                {
+                    message = "Inconsistencia en el monto de pago",
+                    totalVenta,
+                    totalRecibido,
+                    vuelto,
+                    totalEsperado,
+                    diferencia = Math.Round(totalVenta - totalEsperado, 2),
+                    detalle = "Total a cobrar = totalAmount - descuento venta"
+                });
+            }
+
+            // 6. Generar número de comprobante
             string numeroComprobante = await _IVentaBussines.GeneraNumeroComprobante(detalleCarrito);
-            // Crear la venta
+
+            // 7. Crear la venta
             var ventaRequest = new VentaRequest
             {
-
                 FechaVenta = DateTime.Now,
                 TipoComprobante = detalleCarrito.tipoComprobante,
                 IdUsuario = 1,
                 NroComprobante = numeroComprobante,
                 IdPersona = idPersona,
                 IdCaja = cajaDelDia.IdCaja,
-                TotalPrecio = totalVenta,
-                TipoPago = detalleCarrito.tipoPago
+                TotalPrecio = totalFinalVenta, // El total final después de todos los descuentos
+                TipoPago = detalleCarrito.tipoPago,
+                Descuento = totalDescuentosProductos + descuentoVenta, // Total de descuentos aplicados
+                Vuelto = vuelto
             };
 
             var venta = _IVentaBussines.Create(ventaRequest);
             if (venta == null)
                 return StatusCode(500, "Error al crear la venta");
 
-            // Asignar ID de venta a los detalles
+            // 8. Registrar los detalles
             foreach (var d in listaDetalle)
                 d.IdVentas = venta.IdVentas;
 
@@ -298,24 +351,63 @@ namespace API.Controllers
             if (detallesCreados == null)
                 return StatusCode(500, "Error al crear los detalles de la venta");
 
-            // Actualizar caja según método de pago
-            if (detalleCarrito.tipoPago == "Efectivo")
+            // 9. Actualizar caja según tipo de pago
+            // IMPORTANTE: Se suma el total de la venta (lo que realmente ingresa a caja)
+            switch (detalleCarrito.tipoPago?.ToLower())
             {
-                cajaDelDia.IngresosACaja += totalVenta;
-            }
-            else if (detalleCarrito.tipoPago == "Digital")
-            {
-                cajaDelDia.SaldoDigital += totalVenta;
+                case "efectivo":
+                    cajaDelDia.IngresosACaja = (cajaDelDia.IngresosACaja ?? 0) + totalVenta;
+                    break;
+
+                case "digital":
+                    cajaDelDia.SaldoDigital = (cajaDelDia.SaldoDigital ?? 0) + totalVenta;
+                    break;
+
+                case "mixto":
+                    // En mixto, cada método de pago recibe su parte proporcional del total
+                    decimal efectivoRecibido = detalleCarrito.EfectivoRecibido ?? 0;
+                    decimal montoDigital = detalleCarrito.MontoDigital ?? 0;
+
+                    // Calcular proporción de cada método de pago (sin contar el vuelto)
+                    decimal totalPagado = efectivoRecibido + montoDigital - vuelto;
+
+                    if (totalPagado > 0)
+                    {
+                        decimal proporcionEfectivo = (efectivoRecibido - vuelto) / totalPagado;
+                        decimal proporcionDigital = montoDigital / totalPagado;
+
+                        cajaDelDia.IngresosACaja = (cajaDelDia.IngresosACaja ?? 0) + (totalVenta * proporcionEfectivo);
+                        cajaDelDia.SaldoDigital = (cajaDelDia.SaldoDigital ?? 0) + (totalVenta * proporcionDigital);
+                    }
+                    break;
+
+                default:
+                    return BadRequest("Tipo de pago inválido.");
             }
 
+            // 10. Actualizar saldo final de caja
             cajaDelDia.SaldoFinal = (cajaDelDia.SaldoInicial ?? 0)
-                                    + (cajaDelDia.IngresosACaja ?? 0)
-                                    + (cajaDelDia.SaldoDigital ?? 0);
+                                  + (cajaDelDia.IngresosACaja ?? 0)
+                                  + (cajaDelDia.SaldoDigital ?? 0);
 
             _ICajaRepository.Update(cajaDelDia);
 
-            return Ok(new { Message = "Venta y detalles registrados con éxito" });
+            // 11. Respuesta
+            return Ok(new
+            {
+                Message = "Venta y detalles registrados con éxito",
+                IdVenta = venta.IdVentas,
+                Total = totalFinalVenta,
+                TotalAmount = detalleCarrito.TotalAmount, // Suma de productos con descuentos por producto
+                Vuelto = vuelto,
+                DescuentosTotales = totalDescuentosProductos + descuentoVenta,
+                DescuentosProductos = totalDescuentosProductos,
+                DescuentoVenta = descuentoVenta,
+                SubtotalProductos = subtotalProductos
+            });
         }
+
+
 
         [HttpGet("productos-mas-vendidos")]
         public async Task<IActionResult> GetProductosMasVendidos([FromQuery] int mes, [FromQuery] int anio)

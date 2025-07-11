@@ -582,6 +582,12 @@ public partial class LibreriaSaberContext : DbContext
             entity.Property(e => e.TotalPrecio)
                 .HasColumnType("money")
                 .HasColumnName("Total_Precio");
+            entity.Property(e => e.Descuento)
+                 .HasColumnType("money")
+                 .HasColumnName("Descuento");
+            entity.Property(e => e.Vuelto)
+                 .HasColumnType("money")
+                 .HasColumnName("Vuelto");
 
             entity.HasOne(d => d.IdCajaNavigation).WithMany(p => p.Venta)
                 .HasForeignKey(d => d.IdCaja)

@@ -14,5 +14,9 @@ namespace Models.RequestResponse
         public PersonaRequest Persona{ get; set; }
         public string tipoComprobante { get; set; }
         public string tipoPago { get; set; }
+        public decimal? descuento { get; set; }
+        public decimal? vuelto { get; set; }
+        public decimal? EfectivoRecibido { get; set; } 
+        public decimal? MontoDigital { get; set; } 
     }
 }

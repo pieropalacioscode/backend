@@ -23,5 +23,7 @@ namespace Models.RequestResponse
         public int IdUsuario { get; set; }
         public int IdCaja { get; set; }
         public string? TipoPago { get; set; }
+        public decimal? Descuento { get; set; }
+        public decimal? Vuelto { get; set; }
     }
 }
