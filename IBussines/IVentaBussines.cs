@@ -12,6 +12,7 @@ namespace IBussines
         Task GenerarYEnviarPdfDeVenta(int idVenta, string emailCliente);
         Task<string> GeneraNumeroComprobante(DatalleCarrito datalle);
         Task<string> GenerarNumeroComprobante();
+        Task<List<VentaResponse>> ObtenerVentasPorFecha(DateTime fechaInicio, DateTime fechaFin);
         Task<List<VentaResponse>> ObtenerVentasPorFechaAsync(DateTime fechaInicio, DateTime fechaFin);
 
         Task<(List<VentaResponse>, int)> GetVentaPaginados(int page, int pageSize);

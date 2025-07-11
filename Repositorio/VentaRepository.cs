@@ -67,6 +67,13 @@ namespace Repository
 
 
 
+        public async Task<IEnumerable<Venta>> ObtenerVentasPorFecha(DateTime fechaInicio, DateTime fechaFin)
+        {
+            return await dbSet
+                .AsNoTracking()
+                .Where(v => v.FechaVenta >= fechaInicio && v.FechaVenta < fechaFin)
+                .ToListAsync();
+        }
         public async Task<IEnumerable<Venta>> ObtenerVentasPorFechaAsync(DateTime fechaInicio, DateTime fechaFin)
         {
             return await dbSet

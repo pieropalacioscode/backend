@@ -191,6 +191,25 @@ namespace Bussines
                 Vuelto = v.Vuelto
             }).ToList();
         }
+        public async Task<List<VentaResponse>> ObtenerVentasPorFecha(DateTime fechaInicio, DateTime fechaFin)
+        {
+            var ventas = await _IVentaRepository.ObtenerVentasPorFechaAsync(fechaInicio, fechaFin);
+
+            return ventas.Select(v => new VentaResponse
+            {
+                IdVentas = v.IdVentas,
+                TotalPrecio = v.TotalPrecio,
+                TipoComprobante = v.TipoComprobante,
+                FechaVenta = v.FechaVenta,
+                NroComprobante = v.NroComprobante,
+                IdPersona = v.IdPersona,
+                IdUsuario = v.IdUsuario,
+                IdCaja = v.IdCaja,
+                TipoPago = v.TipoPago,
+                Descuento = v.Descuento,
+                Vuelto = v.Vuelto
+            }).ToList();
+        }
 
 
         public async Task<(List<VentaResponse>, int)> GetVentaPaginados(int page, int pageSize)

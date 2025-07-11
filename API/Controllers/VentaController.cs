@@ -201,7 +201,10 @@ namespace API.Controllers
         [HttpGet("resumen-ingresos")]
         public async Task<IActionResult> GenerarResumenIngresos(DateTime fecha)
         {
-            var ventas = await _IVentaBussines.ObtenerVentasPorFechaAsync(fecha, fecha.AddDays(1));
+            var fechaInicio = fecha.Date;
+            var fechaFin = fecha.Date.AddDays(1).AddTicks(-1); // hasta las 23:59:59.9999999
+
+            var ventas = await _IVentaBussines.ObtenerVentasPorFecha(fecha,fechaFin);
 
             if (!ventas.Any())
                 return NotFound("No hay ventas para la fecha seleccionada.");
