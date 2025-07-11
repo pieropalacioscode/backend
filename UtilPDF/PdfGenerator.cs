@@ -173,7 +173,7 @@ namespace UtilPDF
             gfx.DrawString("Descam Mz. F Lt. 3 , Ate , Lima , Lima", smallFont, XBrushes.Black, new XPoint(marginLeft + 5, currentY));
             currentY += 15;
 
-            // Tabla de productos mejorada
+            // Tabla de productos mejorada - SIN columna "Unid"
             double tableY = currentY;
             double tableWidth = pageWidth;
             double headerHeight = 12;
@@ -182,23 +182,19 @@ namespace UtilPDF
             XBrush lightGrayBrush = new XSolidBrush(XColor.FromArgb(240, 240, 240));
             gfx.DrawRectangle(XPens.Black, lightGrayBrush, marginLeft, tableY, tableWidth, headerHeight);
 
-            // Anchos de columnas mejorados y balanceados
+            // Anchos de columnas mejorados - SIN columna "Unid"
             double cantWidth = 12;
-            double unidadWidth = 18;
-            double descripcionWidth = pageWidth - cantWidth - unidadWidth - 22 - 20; // Ajustado para mejor balance
-            double punitWidth = 22;
-            double totalWidth = 20;
+            double descripcionWidth = pageWidth - cantWidth - 20 - 18 - 18; // Más espacio para descripción
+            double punitWidth = 20;
+            double descuentoWidth = 18;
+            double totalWidth = 18;
 
             double xPos = marginLeft + 1;
 
-            // Headers con mejor alineación
+            // Headers con mejor alineación - SIN "Unid"
             gfx.DrawString("Cant", smallFont, XBrushes.Black,
                 new XRect(xPos, tableY + 1, cantWidth, headerHeight), XStringFormats.TopCenter);
             xPos += cantWidth;
-
-            gfx.DrawString("Unid", smallFont, XBrushes.Black,
-                new XRect(xPos, tableY + 1, unidadWidth, headerHeight), XStringFormats.TopCenter);
-            xPos += unidadWidth;
 
             gfx.DrawString("Descripción", smallFont, XBrushes.Black,
                 new XRect(xPos, tableY + 1, descripcionWidth, headerHeight), XStringFormats.TopLeft);
@@ -208,20 +204,24 @@ namespace UtilPDF
                 new XRect(xPos, tableY + 1, punitWidth, headerHeight), XStringFormats.TopCenter);
             xPos += punitWidth;
 
+            gfx.DrawString("Desc", smallFont, XBrushes.Black,
+                new XRect(xPos, tableY + 1, descuentoWidth, headerHeight), XStringFormats.TopCenter);
+            xPos += descuentoWidth;
+
             gfx.DrawString("Total", smallFont, XBrushes.Black,
                 new XRect(xPos, tableY + 1, totalWidth, headerHeight), XStringFormats.TopCenter);
 
             currentY = tableY + headerHeight;
 
-            // Líneas verticales de la tabla más precisas
+            // Líneas verticales de la tabla más precisas - SIN columna "Unid"
             double tableEndY = currentY + (detalles.Count * 16) + 3;
 
-            // Líneas verticales
+            // Líneas verticales - 5 columnas en lugar de 6
             double line1 = marginLeft;
             double line2 = marginLeft + cantWidth;
-            double line3 = marginLeft + cantWidth + unidadWidth;
-            double line4 = marginLeft + cantWidth + unidadWidth + descripcionWidth;
-            double line5 = marginLeft + cantWidth + unidadWidth + descripcionWidth + punitWidth;
+            double line3 = marginLeft + cantWidth + descripcionWidth;
+            double line4 = marginLeft + cantWidth + descripcionWidth + punitWidth;
+            double line5 = marginLeft + cantWidth + descripcionWidth + punitWidth + descuentoWidth;
             double line6 = marginLeft + tableWidth;
 
             gfx.DrawLine(XPens.Black, line1, tableY, line1, tableEndY);
@@ -231,8 +231,9 @@ namespace UtilPDF
             gfx.DrawLine(XPens.Black, line5, tableY, line5, tableEndY);
             gfx.DrawLine(XPens.Black, line6, tableY, line6, tableEndY);
 
-            // Productos con mejor formato
-            decimal subtotalGeneral = 0m;
+            // Solo acumular descuentos para mostrar el total
+            decimal descuentoTotalProductos = 0m;
+
             foreach (var detalle in detalles)
             {
                 double rowHeight = 16;
@@ -240,32 +241,44 @@ namespace UtilPDF
                 // Línea horizontal superior de cada fila
                 gfx.DrawLine(XPens.Black, marginLeft, currentY, marginLeft + tableWidth, currentY);
 
-                // Contenido de cada celda con mejor alineación
+                // Usar datos directos de la DB sin cálculos
+                decimal precioUnitario = detalle.PrecioUnit ?? 0;
+                decimal descuentoUnitario = detalle.Descuento ?? 0;
+                decimal descuentoGeneral = venta.Descuento ?? 0;
+                decimal descuentoTotal = descuentoTotalProductos + descuentoUnitario;
+                decimal totalProducto = detalle.Importe ?? 0; // Usar el total ya calculado en DB
+
+                // Contenido de cada celda - SIN columna "Unid"
                 xPos = line1 + 1;
                 gfx.DrawString((detalle.Cantidad ?? 1).ToString(), smallFont, XBrushes.Black,
                     new XRect(xPos, currentY + 2, cantWidth - 2, rowHeight), XStringFormats.TopCenter);
 
-                xPos = line2 + 1;
-                gfx.DrawString("UND", smallFont, XBrushes.Black,
-                    new XRect(xPos, currentY + 2, unidadWidth - 2, rowHeight), XStringFormats.TopCenter);
-
-                xPos = line3 + 2;
+                xPos = line2 + 2;
                 string nombreProducto = detalle.NombreProducto ?? "Producto";
-                if (nombreProducto.Length > 18)
-                    nombreProducto = nombreProducto.Substring(0, 15) + "...";
+                // Ahora hay más espacio para el nombre del producto
+                if (nombreProducto.Length > 20)
+                    nombreProducto = nombreProducto.Substring(0, 17) + "...";
                 gfx.DrawString(nombreProducto, smallFont, XBrushes.Black,
                     new XRect(xPos, currentY + 2, descripcionWidth - 4, rowHeight), XStringFormats.TopLeft);
 
-                xPos = line4 + 1;
-                gfx.DrawString($"{(detalle.PrecioUnit ?? 0):F2}", smallFont, XBrushes.Black,
+                xPos = line3 + 1;
+                // Mostrar precio unitario de DB
+                gfx.DrawString($"{precioUnitario:F2}", smallFont, XBrushes.Black,
                     new XRect(xPos, currentY + 2, punitWidth - 2, rowHeight), XStringFormats.TopCenter);
 
+                xPos = line4 + 1;
+                // Mostrar descuento unitario de DB
+                gfx.DrawString($"{descuentoUnitario:F2}", smallFont, XBrushes.Red,
+                    new XRect(xPos, currentY + 2, descuentoWidth - 2, rowHeight), XStringFormats.TopCenter);
+
                 xPos = line5 + 1;
-                decimal subtotalProducto = (detalle.Cantidad ?? 1) * (detalle.PrecioUnit ?? 0);
-                gfx.DrawString($"{subtotalProducto:F2}", smallFont, XBrushes.Black,
+                // Mostrar total de DB
+                gfx.DrawString($"{totalProducto:F2}", smallFont, XBrushes.Black,
                     new XRect(xPos, currentY + 2, totalWidth - 2, rowHeight), XStringFormats.TopCenter);
 
-                subtotalGeneral += subtotalProducto;
+                // Solo acumular descuentos para mostrar el total
+
+                descuentoTotalProductos = descuentoTotal;
                 currentY += rowHeight;
             }
 
@@ -273,34 +286,32 @@ namespace UtilPDF
             gfx.DrawLine(XPens.Black, marginLeft, currentY, marginLeft + tableWidth, currentY);
             currentY += 12;
 
-            // Totales con descuento incluido
+            // Obtener datos directos de la DB
+            decimal subtotalVenta = venta.TotalPrecio ?? 0m;
+            decimal descuentoVenta = venta.Descuento ?? 0m;
+            decimal totalVenta = venta.TotalPrecio ?? 0m;
+
+            // Calcular solo el total de descuentos para mostrar
+            decimal totalDescuentos = descuentoTotalProductos;
+
+            // Totales usando datos de DB
             double totalStartX = marginLeft + pageWidth - 35;
 
-            // Subtotal antes de descuento
+            // Mostrar subtotal de DB
             gfx.DrawString($"Subtotal: S/", normalFont, XBrushes.Black, new XPoint(marginLeft, currentY));
-            gfx.DrawString($"{subtotalGeneral:F2}", normalFont, XBrushes.Black, new XPoint(totalStartX, currentY));
+            gfx.DrawString($"{subtotalVenta:F2}", normalFont, XBrushes.Black, new XPoint(totalStartX, currentY));
             currentY += 10;
 
-            // Descuento (si existe)
-            foreach (var detalle in detalles)
+            // Mostrar total de descuentos (si hay)
+            if (totalDescuentos > 0)
             {
-                if (detalle.Descuento > 0)
-                {
-                    gfx.DrawString($"Descuento: S/", normalFont, XBrushes.Red, new XPoint(marginLeft, currentY));
-                    gfx.DrawString($"-{detalle.Descuento:F2}", normalFont, XBrushes.Red, new XPoint(totalStartX, currentY));
-                    currentY += 10;
-                }
-
+                gfx.DrawString($"Total descuentos: S/", normalFont, XBrushes.Red, new XPoint(marginLeft, currentY));
+                gfx.DrawString($"-{totalDescuentos:F2}", normalFont, XBrushes.Red, new XPoint(totalStartX, currentY));
+                currentY += 10;
             }
-            decimal descuentoTotal = detalles.Sum(d => d.Descuento ?? 0); // Suma todos los descuentos
-            decimal totalFinal = subtotalGeneral - descuentoTotal;
-
-
-            // Calcular total final después de descuento
-
 
             gfx.DrawString($"Op. Exoneradas: S/", normalFont, XBrushes.Black, new XPoint(marginLeft, currentY));
-            gfx.DrawString($"{totalFinal:F2}", normalFont, XBrushes.Black, new XPoint(totalStartX, currentY));
+            gfx.DrawString($"{totalVenta:F2}", normalFont, XBrushes.Black, new XPoint(totalStartX, currentY));
             currentY += 10;
 
             gfx.DrawString("IGV: S/", normalFont, XBrushes.Black, new XPoint(marginLeft, currentY));
@@ -308,7 +319,7 @@ namespace UtilPDF
             currentY += 10;
 
             gfx.DrawString($"Total a pagar: S/", headerFont, XBrushes.Black, new XPoint(marginLeft, currentY));
-            gfx.DrawString($"{totalFinal:F2}", headerFont, XBrushes.Black, new XPoint(totalStartX, currentY));
+            gfx.DrawString($"{totalVenta:F2}", headerFont, XBrushes.Black, new XPoint(totalStartX, currentY));
             currentY += 15;
 
             // Separador
@@ -316,7 +327,7 @@ namespace UtilPDF
             currentY += 10;
 
             // Información adicional con mejor formato
-            gfx.DrawString($"Son: {NumeroALetras(totalFinal)} Soles", normalFont, XBrushes.Black,
+            gfx.DrawString($"Son: {NumeroALetras(totalVenta)} Soles", normalFont, XBrushes.Black,
                 new XRect(marginLeft, currentY, pageWidth, 8), XStringFormats.TopLeft);
             currentY += 12;
 
@@ -346,7 +357,7 @@ namespace UtilPDF
             gfx.DrawString("Pagos:", smallFont, XBrushes.Black, new XPoint(marginLeft, currentY));
             currentY += 8;
 
-            gfx.DrawString($"- Efectivo : S/ {totalFinal:F2}", smallFont, XBrushes.Black, new XPoint(marginLeft, currentY));
+            gfx.DrawString($"- Efectivo : S/ {totalVenta:F2}", smallFont, XBrushes.Black, new XPoint(marginLeft, currentY));
             currentY += 8;
 
             gfx.DrawString("Vendedor: ADMIN", smallFont, XBrushes.Black, new XPoint(marginLeft, currentY));

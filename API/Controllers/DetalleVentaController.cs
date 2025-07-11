@@ -255,7 +255,7 @@ namespace API.Controllers
                 _kardexRepository.Update(kardexActual);
 
                 // Calcular subtotal del producto sin descuento
-                decimal subtotalProducto = item.PrecioVenta * item.Cantidad;
+                decimal subtotalProducto = (item.PrecioVenta * item.Cantidad)-item.Descuento;
                 subtotalProductos += subtotalProducto;
 
                 // Acumular descuento por producto
@@ -263,8 +263,8 @@ namespace API.Controllers
                 totalDescuentosProductos += descuentoProducto;
 
                 // Precio final del producto después del descuento
-                decimal precioFinal = item.PrecioVenta - item.Descuento;
-                decimal importe = precioFinal * item.Cantidad;
+                decimal precioFinal = item.PrecioVenta;
+                decimal importe = (precioFinal * item.Cantidad)-item.Descuento;
 
                 var detalle = new DetalleVentaRequest
                 {
@@ -281,7 +281,7 @@ namespace API.Controllers
             }
 
             // 4. Calcular y validar totales
-            decimal subtotalDespuesDescuentosProductos = subtotalProductos - totalDescuentosProductos;
+            decimal subtotalDespuesDescuentosProductos = subtotalProductos;
             decimal descuentoVenta = detalleCarrito.descuento ?? 0;
 
             // Validar que el totalAmount enviado coincida con el calculado (productos con descuentos aplicados)
@@ -335,7 +335,7 @@ namespace API.Controllers
                 IdCaja = cajaDelDia.IdCaja,
                 TotalPrecio = totalFinalVenta, // El total final después de todos los descuentos
                 TipoPago = detalleCarrito.tipoPago,
-                Descuento = totalDescuentosProductos + descuentoVenta, // Total de descuentos aplicados
+                Descuento = descuentoVenta, // Total de descuentos aplicados
                 Vuelto = vuelto
             };
 
