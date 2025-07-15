@@ -133,15 +133,55 @@ namespace Bussines
             return $"LOTE-{DateTime.Now:yyyyMMddHHmmss}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}";
         }
 
+        public IFormFile ConvertirBase64AFormFile(string base64String)
+        {
+            try
+            {
+                byte[] imageBytes;
+                string fileName = Guid.NewGuid().ToString() + ".jpg"; // puedes usar .png si corresponde
+                string contentType = "image/jpeg"; // por defecto
+
+                // Verifica si la cadena contiene el prefijo de data URL
+                if (base64String.Contains(","))
+                {
+                    var parts = base64String.Split(',');
+                    var metadata = parts[0]; // "data:image/png;base64"
+                    var base64Data = parts[1];
+
+                    imageBytes = Convert.FromBase64String(base64Data);
+
+                    // Obtener contentType si se especificó
+                    if (metadata.Contains("image/png")) contentType = "image/png";
+                    else if (metadata.Contains("image/jpeg")) contentType = "image/jpeg";
+                    else if (metadata.Contains("image/jpg")) contentType = "image/jpg";
+                }
+                else
+                {
+                    // Solo base64 sin encabezado
+                    imageBytes = Convert.FromBase64String(base64String);
+                }
+
+                var stream = new MemoryStream(imageBytes);
+                return new FormFile(stream, 0, imageBytes.Length, "file", fileName)
+                {
+                    Headers = new HeaderDictionary(),
+                    ContentType = contentType
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al convertir imagen Base64: " + ex.Message);
+            }
+        }
 
 
         public async Task<string> ConfirmarRecepcionConImagen(
-    int idPedido,
-    int idSucursal,
-    string? descripcionRecepcion,
-    List<DetallePedidoProveedorRequest> detalles,
-    List<IFormFile> imagenes,
-    string estado) // 👈 NUEVO parámetro
+            int idPedido,
+            int idSucursal,
+            string? descripcionRecepcion,
+            List<DetallePedidoProveedorRequest> detalles,
+            List<IFormFile> imagenes,
+            string estado) // 👈 NUEVO parámetro
         {
             // Subir imágenes a Firebase solo si no está cancelado
             List<string> urlsImagenes = new();

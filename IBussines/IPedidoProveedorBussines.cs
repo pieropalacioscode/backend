@@ -24,5 +24,6 @@ namespace IBussines
         Task<List<PedidoDetalleResponse>> GetPedidosConDetallesPorFechaYProveedor(DateTime fecha, int idProveedor);
         Task<byte[]> GenerarPdfPedidosPorFecha(DateTime fecha, int idProveedor);
         Task<string> GenerarYSubirPdfTemporal(DateTime fecha, int idProveedor);
+        IFormFile ConvertirBase64AFormFile(string base64String);
     }
 }

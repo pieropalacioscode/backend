@@ -133,7 +133,7 @@ namespace API.Controllers
                     detalles,
                     imagenes,
                     estado
-                    
+
                 );
 
                 return Ok(new { success = true, message = mensaje });
@@ -144,7 +144,40 @@ namespace API.Controllers
             }
         }
 
+        [HttpPut("confirmar-recepcion-json")]
+        public async Task<IActionResult> ConfirmarRecepcionJson([FromBody] ConfirmarRecepcionJsonRequest request)
+        {
+            try
+            {
+                // Convertir imágenes base64 a IFormFile
+                var imagenes = new List<IFormFile>();
 
+                if (request.ImagenesBase64 != null && request.ImagenesBase64.Any())
+                {
+                    foreach (var imagenBase64 in request.ImagenesBase64)
+                    {
+                        var formFile =  _IPedidoProveedorBussines.ConvertirBase64AFormFile(imagenBase64);
+                        imagenes.Add(formFile);
+                    }
+                }
+
+                // Deserializar detalles (ya vienen como objeto)
+                var mensaje = await _IPedidoProveedorBussines.ConfirmarRecepcionConImagen(
+                    request.IdPedido,
+                    request.IdSucursal,
+                    request.DescripcionRecepcion,
+                    request.Detalles,
+                    imagenes,
+                    request.Estado
+                );
+
+                return Ok(new { success = true, message = mensaje });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
 
 
         [HttpGet("estado")]
