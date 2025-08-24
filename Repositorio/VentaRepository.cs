@@ -71,7 +71,7 @@ namespace Repository
         {
             return await dbSet
                 .AsNoTracking()
-                .Where(v => v.FechaVenta >= fechaInicio && v.FechaVenta < fechaFin)
+                .Where(v => v.FechaVenta >= fechaInicio && v.FechaVenta <= fechaFin)
                 .ToListAsync();
         }
         public async Task<IEnumerable<Venta>> ObtenerVentasPorFechaAsync(DateTime fechaInicio, DateTime fechaFin)
@@ -99,18 +99,35 @@ namespace Repository
         }
 
 
-        public async Task<(int totalComprobantes, decimal montoTotalComprobantes)> ObtenerResumenDashboardAsync()
+        public async Task<ResumenDashboardResponse> ObtenerResumenDashboardAsync()
         {
             var ventas = await dbSet
-                .Where(v => v.TipoComprobante != null &&
-                            (v.TipoComprobante.ToLower() == "boleta" || v.TipoComprobante.ToLower() == "factura"))
+                .Where(v => v.TipoComprobante != null)
                 .ToListAsync();
 
             var totalComprobantes = ventas.Count;
             var montoTotalComprobantes = ventas.Sum(v => v.TotalPrecio ?? 0);
 
-            return (totalComprobantes, montoTotalComprobantes);
+            var boletas = ventas.Where(v => v.TipoComprobante.ToLower() == "boleta");
+            var facturas = ventas.Where(v => v.TipoComprobante.ToLower() == "factura");
+            var notas = ventas.Where(v => v.TipoComprobante.ToLower() == "nota");
+
+            return new ResumenDashboardResponse
+            {
+                TotalComprobantes = totalComprobantes,
+                MontoTotalComprobantes = montoTotalComprobantes,
+
+                TotalBoletas = boletas.Count(),
+                MontoBoletas = boletas.Sum(v => v.TotalPrecio ?? 0),
+
+                TotalFacturas = facturas.Count(),
+                MontoFacturas = facturas.Sum(v => v.TotalPrecio ?? 0),
+
+                TotalNotas = notas.Count(),
+                MontoNotas = notas.Sum(v => v.TotalPrecio ?? 0)
+            };
         }
+
 
 
         public async Task<List<IngresoMensualResponse>> ObtenerIngresosPorMes(int mes)
@@ -229,10 +246,6 @@ namespace Repository
             var resultado = await UtilPaginados.UtilPaginados.CrearPaginadoAsync(query, page, pageSize);
             return resultado;
         }
-
-
-
-
 
     }
 }

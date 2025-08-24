@@ -117,6 +117,38 @@ namespace Repository
 
             return detalles;
         }
+        public async Task<List<VentaResponsePago>> GetPago()
+        {
+            var pagos = await dbSet
+                .Where(v => v.IdVentas != null)
+                .GroupBy(v => v.IdVentasNavigation.TipoPago ?? "Sin Tipo")
+                .Select(g => new VentaResponsePago
+                {
+                    TipoPago = g.Key,
+                    TotalPrecio = g.Sum(x => x.IdVentasNavigation.TotalPrecio)
+                })
+                .ToListAsync();
+
+
+            return pagos;
+        }
+
+        public async Task<List<VentaHistoricaDto>> GetVentasPorLibroAsync(int idLibro)
+        {
+            // dbSet aquí hace referencia a DbSet<DetalleVenta>
+            var query = dbSet
+                .Include(dv => dv.IdVentasNavigation) // Incluimos la navegación hacia Venta
+                .Where(dv => dv.IdLibro == idLibro && dv.IdVentasNavigation.FechaVenta != null)
+                .GroupBy(dv => dv.IdVentasNavigation.FechaVenta.Value.Date)
+                .Select(g => new VentaHistoricaDto
+                {
+                    Fecha = g.Key,
+                    Cantidad = g.Sum(x => x.Cantidad ?? 0)
+                });
+
+            return await query.OrderBy(x => x.Fecha).ToListAsync();
+        }
+
 
     }
 }

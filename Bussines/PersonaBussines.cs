@@ -177,6 +177,9 @@ namespace Bussines
             var personaResponse = _Mapper.Map<List<PersonaResponse>>(persona);
             return (personaResponse, totalItems);
         }
-
+        public async Task<List<Persona>> BuscarPersonasPorNombreAsync(string nombre)
+        {
+            return await _IPersonaRepository.BuscarPersonasPorNombreAsync(nombre);
+        }
     }
 }

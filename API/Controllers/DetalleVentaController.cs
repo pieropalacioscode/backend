@@ -442,6 +442,19 @@ namespace API.Controllers
             return File(pdfBytes, "application/pdf", $"Detalle_Ventas_{fecha:yyyyMMdd}.pdf");
         }
 
+        [HttpGet("Pagos")]
+        public async Task<IActionResult> getPagos()
+        {
+            var pago= await _IDetalleVentaBussines.GetPago();
+            return Ok(pago);
+        }
+
+        [HttpGet("predecir-ventas/{idLibro}")]
+        public async Task<IActionResult> PredecirVentas(int idLibro, [FromQuery] int horizonte = 7)
+        {
+            var resultado = await _IDetalleVentaBussines.PredecirVentasAsync(idLibro, horizonte);
+            return Ok(resultado);
+        }
 
         #endregion
     }

@@ -219,7 +219,7 @@ namespace Bussines
             return (ventaResponse, totalItems);
         }
 
-        public async Task<(int totalComprobantes, decimal totalComprobantesMonto)> ObtenerResumenVentasAsync()
+        public async Task<ResumenDashboardResponse> ObtenerResumenDashboardAsync()
         {
             return await _IVentaRepository.ObtenerResumenDashboardAsync();
         }
@@ -242,5 +242,6 @@ namespace Bussines
         {
             return await _IVentaRepository.GenVentas(page, pageSize);
         }
+
     }
 }

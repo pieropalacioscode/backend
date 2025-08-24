@@ -15,5 +15,7 @@ namespace IRepository
         Task<List<ProductosMasVendidosResponse>> ObtenerProductosMasVendidosAsync(int mes, int anio);
         Task<List<DetalleVenta>> ObtenerDetallesPorIdsVentasAsync(List<int> idsVentas);
         Task<List<DetalleVentaResponse>> ObtenerDetallesPorFechaAsync(DateTime fechaInicio, DateTime fechaFin);
+        Task<List<VentaResponsePago>> GetPago();
+        Task<List<VentaHistoricaDto>> GetVentasPorLibroAsync(int idLibro);
     }
 }

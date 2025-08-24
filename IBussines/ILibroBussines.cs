@@ -28,7 +28,17 @@ namespace IBussines
         Task<List<InventarioResponse>> BuscarEnInventario(string query);
         Task<LibroResponse> CreateImagenDetalle(LibroconautorRequest entity, IFormFile imageFile, decimal precioVenta, int stock);
         Task<LibroResponse> UpdateLib(LibroconautorRequest entity, IFormFile? imageFile, decimal precioVenta, int stock);
-        Task<(List<Libro>, int)> FiltrarLibrosAsync(bool? estado, string titulo, int page, int pageSize);
+        Task<(List<Libro>, int)> FiltrarLibrosAsync(
+             bool? estado,
+             string titulo,
+             int? idCategoria,
+             int? idSubcategoria,
+             int page,
+             int pageSize);
+        Task<(List<Libro> Libros, int TotalItems)> FiltrarLibrosProveedorAsync(
+                int? idProveedor,
+                int page,
+                int pageSize);
         Task<bool> CambiarEstadoLibro(int libroId);
         Task<PaginacionResponse<LibroResponse>> ListarPorProveedorPaginadoAsync(int idProveedor, int pagina, int cantidad);
         Task<List<LibroResponse>> CrearLibrosDesdeExcel(List<LibroExcelRequest> librosExcel);

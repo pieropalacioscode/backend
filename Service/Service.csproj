@@ -35,6 +35,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
+    <PackageReference Include="Microsoft.ML" Version="4.0.2" />
+    <PackageReference Include="Microsoft.ML.AutoML" Version="0.22.2" />
     <PackageReference Include="OpenAI" Version="2.2.0" />
     <PackageReference Include="PayPal" Version="1.9.1" />
     <PackageReference Include="PayPalCoreSDK" Version="1.7.1" />
@@ -47,6 +49,7 @@
     <ProjectReference Include="..\IRepositorio\IRepository.csproj" />
     <ProjectReference Include="..\IService\IService.csproj" />
     <ProjectReference Include="..\Models\Models.csproj" />
+    <ProjectReference Include="..\UtilSecurity\UtilSecurity.csproj" />
   </ItemGroup>
 
 </Project>

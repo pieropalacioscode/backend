@@ -12,5 +12,6 @@ namespace IBussines
     public interface ISubcategoriaBussines : ICRUDBussnies<SubcategoriaRequest, SubcategoriaResponse>
     {
         Task<List<int>> GetLibrosIdsBySubcategoria(int subcategoriaId);
+        Task<(List<Subcategoria>, int)> FiltrarSubcategoriasAsync(int? categoriaId, int page, int pageSize);
     }
 }

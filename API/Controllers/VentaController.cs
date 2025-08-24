@@ -161,12 +161,22 @@ namespace API.Controllers
         [HttpGet("resumen-ventas")]
         public async Task<IActionResult> ObtenerResumenVentas()
         {
-            var (totalComprobantes, totalComprobantesMonto) = await _IVentaBussines.ObtenerResumenVentasAsync();
+            var resumen = await _IVentaBussines.ObtenerResumenDashboardAsync();
 
             return Ok(new
             {
-                TotalComprobantesEmitidos = totalComprobantes,
-                MontoTotalComprobantes = $"S/ {totalComprobantesMonto:N2}",
+                    TotalComprobantes = resumen.TotalComprobantes,
+                    MontoTotal = $"S/ {resumen.MontoTotalComprobantes:N2}",
+
+                    TotalBoletas = resumen.TotalBoletas,
+                    montoTotalBoletas = $"S/ {resumen.MontoBoletas:N2}",
+
+                    TotalFacturas = resumen.TotalFacturas,
+                    MontoTotalFacturas = $"S/ {resumen.MontoFacturas:N2}",
+
+                    TotalNotas = resumen.TotalNotas,
+                    MontoTotalNotas = $"S/ {resumen.MontoNotas:N2}",
+
             });
         }
 

@@ -10,7 +10,7 @@ namespace Repository.Generic
 {
     public class GenericRepository<TEntity> where TEntity : class
     {
-        internal LibreriaSaberContext db = new LibreriaSaberContext();
+        internal LibreriaSaContext db = new LibreriaSaContext();
         internal DbSet<TEntity> dbSet;
         public GenericRepository()
         {

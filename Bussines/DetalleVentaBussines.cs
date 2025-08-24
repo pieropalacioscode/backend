@@ -2,10 +2,12 @@
 using DBModel.DB;
 using IBussines;
 using IRepository;
+using IService;
 using Models.RequestResponse;
 using PdfSharpCore.Drawing;
 using PdfSharpCore.Pdf;
 using Repository;
+using Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,15 +22,18 @@ namespace Bussines
         #region Declaracion de vcariables generales
         public readonly IDetalleVentaRepository _IDetalleVentaRepository;
         public readonly IMapper _Mapper;
-      
+        private readonly IMLPredictionService _mlPredictionService;
+        private readonly IDimFechaRepository _dimFechaRepository;
+
         #endregion
 
         #region constructor 
-        public DetalleVentaBussines(IMapper mapper)
+        public DetalleVentaBussines(IMapper mapper,IMLPredictionService mLPredictionService, IDimFechaRepository dimFechaRepository)
         {
             _Mapper = mapper;
             _IDetalleVentaRepository = new DetalleVentaRepository();
-           
+            _mlPredictionService = mLPredictionService;
+            _dimFechaRepository = dimFechaRepository;
         }
         #endregion
 
@@ -130,6 +135,49 @@ namespace Bussines
         {
             return await _IDetalleVentaRepository.ObtenerDetallesPorFechaAsync(fechaInicio, fechaFin);
         }
+
+        public async Task<List<VentaResponsePago>> GetPago()
+        {
+            return await _IDetalleVentaRepository.GetPago();
+        }
+
+
+        public async Task<List<VentaPrediccionDto>> PredecirVentasAsync(int idLibro, int horizonte = 7)
+        {
+            // 1. Obtener datos históricos
+            var ventasHistoricas = await _IDetalleVentaRepository.GetVentasPorLibroAsync(idLibro);
+
+            if (ventasHistoricas == null || !ventasHistoricas.Any())
+                return new List<VentaPrediccionDto>();
+
+            // 2. Obtener DimFecha completa (o solo las fechas necesarias)
+            var fechas = await _dimFechaRepository.GetAllAsync(); // Devuelve List<DimFechaDto>
+
+            // 3. Entrenar el modelo con los datos históricos y DimFecha
+            var modeloEntrenado = _mlPredictionService.TrainForecastingModel(ventasHistoricas, fechas, horizonte);
+
+            // 4. Generar predicciones usando DimFecha futura
+            var ultimaFecha = ventasHistoricas.Max(v => v.Fecha);
+            var predicciones = new List<VentaPrediccionDto>();
+
+            for (int i = 1; i <= horizonte; i++)
+            {
+                var fechaPred = ultimaFecha.AddDays(i);
+                var dimFechaPred = fechas.FirstOrDefault(f => f.Fecha.Date == fechaPred.Date);
+
+                var cantidadPredicha = _mlPredictionService.PredictFuture(modeloEntrenado, dimFechaPred);
+
+                predicciones.Add(new VentaPrediccionDto
+                {
+                    Fecha = fechaPred,
+                    CantidadPredicha = cantidadPredicha,
+                    DimFecha = dimFechaPred
+                });
+            }
+
+            return predicciones;
+        }
+
 
     }
 }

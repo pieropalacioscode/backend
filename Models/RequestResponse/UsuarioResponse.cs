@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DBModel.DB;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,9 +20,31 @@ namespace Models.ResponseResponse
         public bool? Estado { get; set; }
 
         public int IdPersona { get; set; }
-        //public virtual ICollection<CajaResponse> CajaIdUsuarioAperturaNavigations { get; set; } = new List<Caja>();
-        //public virtual ICollection<CajaCajaResponse> CajaIdUsuarioCierreNavigations { get; set; } = new List<Caja>();
-        //public virtual PersonaCajaResponse? IdPersonaNavigation { get; set; }
-        //public virtual ICollection<PedidoCajaResponse> Pedidos { get; set; } = new List<Pedido>();
+    }
+
+    public class UsuarioPersonaResponse
+    {
+        public int IdUsuario { get; set; }
+
+        public string? Username { get; set; }
+
+        public string? Cargo { get; set; }
+
+        public bool? Estado { get; set; }
+        public string EstadoDescripcion
+        {
+            get
+            {
+                if (Estado == true) return "Activo";
+                if (Estado == false) return "Inactivo";
+                return "Sin definir";
+            }
+        }
+        public string Nombre { get; set; }
+        public string Apellido { get; set; }
+        public string TipoDocumento { get; set; }
+        public string NumeroDocumento { get; set; }
+        public string Telefono { get;set; }
+
     }
 }

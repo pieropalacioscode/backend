@@ -29,7 +29,11 @@ public partial class LibreriaSaContext : DbContext
 
     public virtual DbSet<DetalleVenta> DetalleVentas { get; set; }
 
+    public virtual DbSet<DimFecha> DimFechas { get; set; }
+
     public virtual DbSet<DocSalida> DocSalidas { get; set; }
+
+    public virtual DbSet<Feriado> Feriados { get; set; }
 
     public virtual DbSet<Kardex> Kardices { get; set; }
 
@@ -64,6 +68,12 @@ public partial class LibreriaSaContext : DbContext
     public virtual DbSet<Usuario> Usuarios { get; set; }
 
     public virtual DbSet<Venta> Ventas { get; set; }
+
+    public virtual DbSet<VwCalendario> VwCalendarios { get; set; }
+
+    public virtual DbSet<VwDataEntrenamiento> VwDataEntrenamientos { get; set; }
+
+    public virtual DbSet<VwVentasDiaria> VwVentasDiarias { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
@@ -220,6 +230,22 @@ public partial class LibreriaSaContext : DbContext
                 .HasConstraintName("FK_detalle_ventas_ventas");
         });
 
+        modelBuilder.Entity<DimFecha>(entity =>
+        {
+            entity.HasKey(e => e.IdFecha).HasName("PK__DimFecha__8D0F205A88ACCE0E");
+
+            entity.ToTable("DimFecha");
+
+            entity.HasIndex(e => e.Fecha, "UQ__DimFecha__B30C8A5E44E7E427").IsUnique();
+
+            entity.Property(e => e.IdFecha).ValueGeneratedNever();
+            entity.Property(e => e.Estacion).HasMaxLength(20);
+            entity.Property(e => e.Fecha).HasColumnType("date");
+            entity.Property(e => e.NombreDia).HasMaxLength(20);
+            entity.Property(e => e.NombreMes).HasMaxLength(20);
+            entity.Property(e => e.TipoDia).HasMaxLength(20);
+        });
+
         modelBuilder.Entity<DocSalida>(entity =>
         {
             entity.HasKey(e => e.IdDocSalida).HasName("PK__DocSalid__A8C34201FDF179B3");
@@ -237,6 +263,16 @@ public partial class LibreriaSaContext : DbContext
                 .HasForeignKey(d => d.IdTipoDocSalida)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_DocSalida_TipoDocSalida");
+        });
+
+        modelBuilder.Entity<Feriado>(entity =>
+        {
+            entity.HasKey(e => e.IdFeriado).HasName("PK__Feriados__8A3082C487949032");
+
+            entity.HasIndex(e => e.Fecha, "UQ__Feriados__B30C8A5EE7D93F59").IsUnique();
+
+            entity.Property(e => e.Descripcion).HasMaxLength(100);
+            entity.Property(e => e.Fecha).HasColumnType("date");
         });
 
         modelBuilder.Entity<Kardex>(entity =>
@@ -568,11 +604,13 @@ public partial class LibreriaSaContext : DbContext
             entity.HasKey(e => e.IdVentas).HasName("PK__Ventas__464C581FB2637464");
 
             entity.Property(e => e.IdVentas).HasColumnName("Id_Ventas");
+            entity.Property(e => e.Descuento).HasColumnType("money");
             entity.Property(e => e.FechaVenta)
                 .HasColumnType("datetime")
                 .HasColumnName("Fecha_Venta");
             entity.Property(e => e.IdCaja).HasColumnName("Id_Caja");
             entity.Property(e => e.IdPersona).HasColumnName("Id_Persona");
+            entity.Property(e => e.IdSucursal).HasDefaultValueSql("((1))");
             entity.Property(e => e.IdUsuario).HasColumnName("Id_Usuario");
             entity.Property(e => e.NroComprobante)
                 .HasMaxLength(200)
@@ -588,6 +626,9 @@ public partial class LibreriaSaContext : DbContext
             entity.Property(e => e.TotalPrecio)
                 .HasColumnType("money")
                 .HasColumnName("Total_Precio");
+            entity.Property(e => e.Vuelto)
+                .HasColumnType("money")
+                .HasColumnName("vuelto");
 
             entity.HasOne(d => d.IdCajaNavigation).WithMany(p => p.Venta)
                 .HasForeignKey(d => d.IdCaja)
@@ -603,6 +644,35 @@ public partial class LibreriaSaContext : DbContext
                 .HasForeignKey(d => d.IdUsuario)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Ventas_Usuario");
+        });
+
+        modelBuilder.Entity<VwCalendario>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("vw_Calendario");
+
+            entity.Property(e => e.Fecha).HasColumnType("date");
+        });
+
+        modelBuilder.Entity<VwDataEntrenamiento>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("vw_DataEntrenamiento");
+
+            entity.Property(e => e.Fecha).HasColumnType("date");
+            entity.Property(e => e.TotalImporte).HasColumnType("money");
+        });
+
+        modelBuilder.Entity<VwVentasDiaria>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("vw_Ventas_Diarias");
+
+            entity.Property(e => e.Fecha).HasColumnType("date");
+            entity.Property(e => e.TotalImporte).HasColumnType("money");
         });
 
         OnModelCreatingPartial(modelBuilder);

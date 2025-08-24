@@ -17,7 +17,17 @@ namespace IRepositorio
         Task<PaginacionResponse<InventarioResponse>> GetInventarioPaginadoAsync(int pagina, int cantidad);
         Task<List<InventarioResponse>> BuscarEnInventario(string query);
         Task<Libro> GetByIdAsync(object id);
-        Task<(List<Libro>, int)> FiltrarLibrosAsync(bool? estado, string titulo, int page, int pageSize);
+        Task<(List<Libro>, int)> FiltrarLibrosAsync(
+            bool? estado,
+            string titulo,
+            int? idCategoria,
+            int? idSubcategoria,
+            int page,
+            int pageSize);
+        Task<(List<Libro> Libros, int TotalItems)> FiltrarLibrosProveedorAsync(
+                int? idProveedor,
+                int page,
+                int pageSize);
         Task<bool> CambiarEstadoLibro(int libroId);
         Task<PaginacionResponse<Libro>> ListarPorProveedorPaginadoAsync(int idProveedor, int pagina, int cantidad);
 

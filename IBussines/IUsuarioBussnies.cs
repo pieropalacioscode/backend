@@ -16,5 +16,7 @@ namespace IBussnies
     {
         UsuarioResponse GetByUserName(string userName);
         Task<PaginacionResponse<Usuario>> GetUsuarios(int page, int pageSize);
+        Task<UsuarioPersonaResponse> GetUsuarioPersona(int id);
+        Task<bool> CrearUsuarioAsync(UsuarioRequest request);
     }
 }

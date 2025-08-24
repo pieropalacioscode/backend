@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Bussines;
 using Bussnies;
+using DBModel.DB;
 using IBussines;
 using IBussnies;
 using Microsoft.AspNetCore.Mvc;
@@ -37,7 +38,18 @@ namespace API.Controllers
         public IActionResult GetAll()
         {
             List<UsuarioResponse> lsl = _IUsuarioBussines.getAll();
-            return Ok(lsl);
+            // Construir la lista de respuesta sin la contraseña
+            var usuariosResponse = lsl.Select(u => new UsuarioResponse
+            {
+                IdUsuario = u.IdUsuario,
+                Username = u.Username,
+                Password = null, // Aquí eliminamos la contraseña
+                Cargo = u.Cargo,
+                Estado = u.Estado,
+                IdPersona = u.IdPersona
+            }).ToList();
+
+            return Ok(usuariosResponse);
         }
 
         /// <summary>
@@ -57,12 +69,12 @@ namespace API.Controllers
         /// </summary>
         /// <param name="request">Registro a insertar</param>
         /// <returns>Retorna el registro insertado</returns>
-        [HttpPost]
-        public IActionResult Create([FromBody] UsuarioRequest request)
-        {
-            UsuarioResponse res = _IUsuarioBussines.Create(request);
-            return Ok(res);
-        }
+        //[HttpPost]
+        //public IActionResult Create([FromBody] UsuarioRequest request)
+        //{
+        //    UsuarioResponse res = _IUsuarioBussines.Create(request);
+        //    return Ok(res);
+        //}
 
         /// <summary>
         /// Actualiza un registro
@@ -93,6 +105,27 @@ namespace API.Controllers
         {
             var paginacion = await _IUsuarioBussines.GetUsuarios(page, pageSize);
             return Ok(paginacion); 
+        }
+
+        [HttpGet("Persona/{id}")]
+        public async Task<IActionResult> GetUsuarioPersona(int id)
+        {
+            var usuario= await _IUsuarioBussines.GetUsuarioPersona(id);
+            return Ok(usuario);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CrearUsuario([FromBody] UsuarioRequest request)
+        {
+            if (request == null)
+                return BadRequest("El request no puede ser nulo.");
+
+            bool resultado = await _IUsuarioBussines.CrearUsuarioAsync(request);
+
+            if (!resultado)
+                return BadRequest("No se pudo crear el usuario. Verifica que la persona exista.");
+
+            return Ok(new { mensaje = "Usuario creado correctamente." });
         }
         #endregion
     }

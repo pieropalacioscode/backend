@@ -17,6 +17,6 @@ namespace IBussines
         Persona GetPersonaByDocumento(string documento);
         Task<(List<PersonaResponse>, int)> GetPersonaPaginados(int page, int pageSize);
 
-
+        Task<List<Persona>> BuscarPersonasPorNombreAsync(string nombre);
     }
 }

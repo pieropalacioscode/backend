@@ -124,7 +124,7 @@ namespace Bussines
                         {
                             IdLibro = libro.IdLibro,
                             Tipo = "stock",
-                            Mensaje = $"📉 El libro \"{libro.IdLibroNavigation?.Titulo ?? "Sin título"}\" tiene stock bajo ({libro.Stock}).",
+                            Mensaje = $"El libro \"{libro.IdLibroNavigation?.Titulo ?? "Sin título"}\" tiene stock bajo ({libro.Stock}).",
                             Fecha = DateTime.Now,
                             Leido = false
                         };

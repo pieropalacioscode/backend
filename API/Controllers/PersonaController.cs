@@ -157,6 +157,15 @@ namespace API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        [HttpGet("buscar/{nombre}")]
+        public async Task<IActionResult> BuscarPersonasPorNombre(string nombre)
+        {
+            var personas = await _IPersonaBussines.BuscarPersonasPorNombreAsync(nombre);
 
+            if (personas == null || !personas.Any())
+                return NotFound("No se encontraron personas con ese nombre.");
+
+            return Ok(personas);
+        }
     }
 }

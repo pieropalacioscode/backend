@@ -287,14 +287,32 @@ namespace API.Controllers
             return Ok(res);
         }
 
-        //Filtrador Completo
         [HttpGet("filtrar")]
-        public async Task<IActionResult> FiltrarLibros([FromQuery] bool? estado, [FromQuery] string? titulo = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> FiltrarLibros(
+            [FromQuery] bool? estado,
+            [FromQuery] string titulo = null,
+            [FromQuery] int? idCategoria = null,
+            [FromQuery] int? idSubcategoria = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
         {
-            var (libros, totalItems) = await _ILibroBussines.FiltrarLibrosAsync(estado, titulo, page, pageSize);
+            var (libros, totalItems) = await _ILibroBussines.FiltrarLibrosAsync(
+                estado, titulo, idCategoria, idSubcategoria, page, pageSize);
 
             return Ok(new { libros, totalItems });
         }
+
+
+        [HttpGet("Filtro/Proveedor")]
+        public async Task<IActionResult> FiltrareProveedor([FromQuery] int? idProveedor = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var (libros, totalItems) = await _ILibroBussines.FiltrarLibrosProveedorAsync(idProveedor, page, pageSize);
+            return Ok(new { libros, totalItems });
+        }
+
+
         //Cambiar estado a inactivo
         [HttpPut("cambiar-estado/{id}")]
         public async Task<IActionResult> CambiarEstado(int id)

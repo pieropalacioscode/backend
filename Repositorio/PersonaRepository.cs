@@ -93,7 +93,12 @@ namespace Repository
             var persona = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
             return (persona, totalItems);
         }
-
+        public async Task<List<Persona>> BuscarPersonasPorNombreAsync(string nombre)
+        {
+            return await db.Personas
+                .Where(p => p.Nombre.Contains(nombre)) // Permite buscar por coincidencia parcial
+                .ToListAsync();
+        }
 
     }
 }

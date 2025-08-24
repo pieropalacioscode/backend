@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 namespace DBModel.DB;
 
@@ -23,11 +22,17 @@ public partial class Venta
     public int IdCaja { get; set; }
 
     public string? TipoPago { get; set; }
-    public decimal? Descuento { get;set; }
+
+    public decimal? Descuento { get; set; }
+
     public decimal? Vuelto { get; set; }
+
+    public int IdSucursal { get; set; }
+
     public virtual ICollection<DetalleVenta> DetalleVenta { get; set; } = new List<DetalleVenta>();
+
     public virtual Caja IdCajaNavigation { get; set; } = null!;
-    [JsonIgnore]
+
     public virtual Persona IdPersonaNavigation { get; set; } = null!;
 
     public virtual Usuario IdUsuarioNavigation { get; set; } = null!;

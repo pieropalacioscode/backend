@@ -228,23 +228,47 @@ namespace Repository
         }
 
 
-        public async Task<(List<Libro>, int)> FiltrarLibrosAsync(bool? estado, string titulo, int page, int pageSize)
+        public async Task<(List<Libro>, int)> FiltrarLibrosAsync(
+            bool? estado,
+            string titulo,
+            int? idCategoria,
+            int? idSubcategoria,
+            int page,
+            int pageSize)
         {
-            var query = dbSet.AsQueryable();
+            var query = dbSet
+                .Include(l => l.IdSubcategoriaNavigation)
+                    .ThenInclude(s => s.IdCategoriaNavigation) // asegurar relación
+                .AsQueryable();
 
-            // Filtrar por estado si se proporciona
+            // Filtrar por estado
             if (estado.HasValue)
             {
                 query = query.Where(l => l.Estado == estado.Value);
             }
 
-            // Filtrar por título si se proporciona
+            // Filtrar por título
             if (!string.IsNullOrWhiteSpace(titulo))
             {
                 query = query.Where(l => EF.Functions.Like(l.Titulo, $"%{titulo}%"));
             }
 
+            // Filtrar por subcategoría
+            if (idSubcategoria.HasValue)
+            {
+                query = query.Where(l => l.IdSubcategoria == idSubcategoria.Value);
+            }
+
+            // Filtrar por categoría
+            if (idCategoria.HasValue)
+            {
+                query = query.Where(l => l.IdSubcategoriaNavigation.IdCategoria == idCategoria.Value);
+            }
+
+            // Total para paginación
             int totalItems = await query.CountAsync();
+
+            // Paginación
             var libros = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -252,6 +276,7 @@ namespace Repository
 
             return (libros, totalItems);
         }
+
 
         public async Task<bool> CambiarEstadoLibro(int libroId)
         {
@@ -276,6 +301,39 @@ namespace Repository
 
             return await UtilPaginados.UtilPaginados.CrearPaginadoAsync(query, pagina, cantidad);
         }
+
+
+        public async Task<(List<Libro> Libros, int TotalItems)> FiltrarLibrosProveedorAsync(
+                int? idProveedor,
+                int page,
+                int pageSize)
+        {
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 10;
+
+            var query = dbSet
+                .Include(l => l.IdProveedorNavigation)
+                .AsQueryable();
+
+            // Aplicar filtro por proveedor solo si viene un id válido (> 0)
+            if (idProveedor is > 0)
+            {
+                query = query.Where(l => l.IdProveedor == idProveedor.Value);
+            }
+
+            // Total de registros filtrados
+            var totalItems = await query.CountAsync();
+
+            // Paginación
+            var libros = await query
+                .OrderBy(l => l.IdLibro) // 👈 para tener orden determinístico
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (libros, totalItems);
+        }
+
 
 
     }

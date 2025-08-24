@@ -113,6 +113,14 @@ namespace Bussnies
         {
             return await _IUsuarioRepository.GetUsuarios(page, pageSize);
         }
+        public async Task<UsuarioPersonaResponse> GetUsuarioPersona(int id)
+        {
+            return await _IUsuarioRepository.GetUsuarioPersona(id);
+        }
 
+        public async Task<bool> CrearUsuarioAsync(UsuarioRequest request)
+        {
+            return await _IUsuarioRepository.CrearUsuarioAsync(request);
+        }
     }
 }

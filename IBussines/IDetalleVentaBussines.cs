@@ -15,5 +15,7 @@ namespace IBussines
         Task<List<ProductosMasVendidosResponse>> ObtenerProductosMasVendidosAsync(int mes, int anio);
         Task<List<DetalleVentaResponse>> ObtenerDetallesPorIdsVentasAsync(List<int> idsVentas);
         Task<List<DetalleVentaResponse>> ObtenerDetallesPorFechaAsync(DateTime fechaInicio, DateTime fechaFin);
+        Task<List<VentaResponsePago>> GetPago();
+        Task<List<VentaPrediccionDto>> PredecirVentasAsync(int idLibro, int horizonte = 7);
     }
 }
