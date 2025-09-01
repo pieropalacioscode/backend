@@ -21,6 +21,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UtilPaginados;
 
+
 namespace Bussines
 {
     public class LibroBussines : ILibroBussines
@@ -142,10 +143,12 @@ namespace Bussines
         }
 
 
-        public async Task<List<Libro>> GetLibrosByIds(List<int> ids)
+        public async Task<List<Models.RequestResponse.LibroResponse.LibroConStockPrecioDto>> GetLibrosByIds(List<int> ids)
         {
+            // Llamamos al repositorio que ya devuelve el DTO
             return await _ILibroRepository.GetByIds(ids);
         }
+
 
         public async Task<Libro> ObtenerLibroConPreciosYPublicoObjetivo(int libroId)
         {

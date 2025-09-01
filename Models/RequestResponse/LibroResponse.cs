@@ -119,5 +119,27 @@ namespace Models.RequestResponse
             public string apellido { get; set; }
         }
 
+
+        public class LibroConStockPrecioDto
+        {
+            public int IdLibro { get; set; }
+            public string? Titulo { get; set; }
+            public string? Isbn { get; set; }
+            public string? Tamanno { get; set; }
+            public string? Descripcion { get; set; }
+            public string? Condicion { get; set; }
+            public string? Impresion { get; set; }
+            public string? TipoTapa { get; set; }
+            public bool? Estado { get; set; }
+            public int IdSubcategoria { get; set; }
+            public int IdTipoPapel { get; set; }
+            public int IdProveedor { get; set; }
+            public string? Imagen { get; set; }
+
+            public decimal PrecioVenta { get; set; }
+            public int Stock { get; set; }
+        }
+
+
     }
 }

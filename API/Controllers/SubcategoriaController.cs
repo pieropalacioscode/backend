@@ -97,6 +97,7 @@ namespace API.Controllers
 
             return Ok(libros);
         }
+
         [HttpGet("filtrar")]
         public async Task<IActionResult> FiltrarSubcategorias(
             [FromQuery] int? categoriaId,

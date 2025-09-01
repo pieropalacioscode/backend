@@ -3,9 +3,11 @@ using DocumentFormat.OpenXml.InkML;
 using IRepositorio;
 using Microsoft.EntityFrameworkCore;
 using Models.RequestResponse;
+using Models.RequestResponse;
 using Repository.Generic;
 using UtilPaginados;
-using Models.RequestResponse;
+
+
 
 namespace Repository
 {
@@ -18,10 +20,34 @@ namespace Repository
             throw new NotImplementedException();
         }
 
-        public async Task<List<Libro>> GetByIds(List<int> ids)
+        public async Task<List<LibroResponse.LibroConStockPrecioDto>> GetByIds(List<int> ids)
         {
-            return await dbSet.Where(libro => ids.Contains(libro.IdLibro)).ToListAsync();
+            return await dbSet
+                .Where(libro => ids.Contains(libro.IdLibro))
+                .Select(libro => new LibroResponse.LibroConStockPrecioDto
+                {
+                    IdLibro = libro.IdLibro,
+                    Titulo = libro.Titulo,
+                    Isbn = libro.Isbn,
+                    Tamanno = libro.Tamanno,
+                    Descripcion = libro.Descripcion,
+                    Condicion = libro.Condicion,
+                    Impresion = libro.Impresion,
+                    TipoTapa = libro.TipoTapa,
+                    Estado = libro.Estado,
+                    IdSubcategoria = libro.IdSubcategoria,
+                    IdTipoPapel = libro.IdTipoPapel,
+                    IdProveedor = libro.IdProveedor,
+                    Imagen = libro.Imagen,
+                    PrecioVenta = libro.Precios
+                        .Select(p => p.PrecioVenta ?? 0)
+                        .FirstOrDefault(), // solo un precio, si hay varios toma el primero
+                    Stock = libro.Kardex != null ? libro.Kardex.Stock ?? 0 : 0
+                })
+                .ToListAsync();
         }
+
+
 
         public async Task<Libro> GetLibroConPreciosYPublicoObjetivo(int libroId)
         {

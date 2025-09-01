@@ -150,38 +150,34 @@ namespace Bussines
             if (ventasHistoricas == null || !ventasHistoricas.Any())
                 return new List<VentaPrediccionDto>();
 
-            // 2. Obtener todas las fechas desde la tabla DimFecha
-            var fechas = await _dimFechaRepository.GetAllAsync(); // List<DimFechaDto>
+            // 2. Obtener DimFecha completa (o solo las fechas necesarias)
+            var fechas = await _dimFechaRepository.GetAllAsync(); // Devuelve List<DimFechaDto>
 
-            // 3. Entrenar el modelo con los datos históricos
+            // 3. Entrenar el modelo con los datos históricos y DimFecha
             var modeloEntrenado = _mlPredictionService.TrainForecastingModel(ventasHistoricas, fechas, horizonte);
 
-            // 4. Determinar fecha de inicio para la predicción (mañana)
-            var hoy = DateTime.Today;
-            var fechasFuturas = fechas
-                .Where(f => f.Fecha.Date > hoy) // Solo futuras
-                .OrderBy(f => f.Fecha)
-                .Take(horizonte)
-                .ToList();
-
-            // 5. Generar predicciones
+            // 4. Generar predicciones usando DimFecha futura
+            var ultimaFecha = ventasHistoricas.Max(v => v.Fecha);
             var predicciones = new List<VentaPrediccionDto>();
 
-            foreach (var dimFecha in fechasFuturas)
+            for (int i = 1; i <= horizonte; i++)
             {
-                var cantidadPredicha = _mlPredictionService.PredictFuture(modeloEntrenado, dimFecha);
+                var fechaPred = ultimaFecha.AddDays(i);
+
+                var dimFechaPred = fechas.FirstOrDefault(f => f.Fecha.Date == fechaPred.Date);
+
+                var cantidadPredicha = _mlPredictionService.PredictFuture(modeloEntrenado, dimFechaPred);
 
                 predicciones.Add(new VentaPrediccionDto
                 {
-                    Fecha = dimFecha.Fecha,
+                    Fecha = fechaPred,
                     CantidadPredicha = cantidadPredicha,
-                    DimFecha = dimFecha
+                    DimFecha = dimFechaPred
                 });
             }
 
             return predicciones;
         }
-
 
 
     }
