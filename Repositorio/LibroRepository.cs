@@ -9,6 +9,8 @@ using UtilPaginados;
 
 
 
+
+
 namespace Repository
 {
     public class LibroRepository : GenericRepository<Libro>, ILibroRepository
@@ -329,36 +331,70 @@ namespace Repository
         }
 
 
-        public async Task<(List<Libro> Libros, int TotalItems)> FiltrarLibrosProveedorAsync(
-                int? idProveedor,
-                int page,
-                int pageSize)
+        public async Task<(List<LibroInventarioDto> Libros, int TotalItems)> FiltrarLibrosProveedorAsync(int? idProveedor,string? titulo = null,int page = 1,int pageSize = 10)
         {
             if (page <= 0) page = 1;
             if (pageSize <= 0) pageSize = 10;
 
             var query = dbSet
                 .Include(l => l.IdProveedorNavigation)
+                .Include(l => l.Kardex)
+                .Include(l => l.Precios)
+                .Include(l => l.IdTipoPapelNavigation)
                 .AsQueryable();
 
-            // Aplicar filtro por proveedor solo si viene un id válido (> 0)
+            // Filtrar por proveedor
             if (idProveedor is > 0)
-            {
                 query = query.Where(l => l.IdProveedor == idProveedor.Value);
+
+            if (!string.IsNullOrWhiteSpace(titulo))
+            {
+                var palabras = titulo.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                foreach (var palabra in palabras)
+                {
+                    string palabraLower = palabra.ToLower();
+                    query = query.Where(l => l.Titulo != null && l.Titulo.ToLower().Contains(palabraLower));
+                }
             }
 
-            // Total de registros filtrados
+
             var totalItems = await query.CountAsync();
 
-            // Paginación
-            var libros = await query
-                .OrderBy(l => l.IdLibro) // 👈 para tener orden determinístico
+            var librosRaw = await query
+                .OrderBy(l => l.IdLibro)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
+                .Include(l => l.Kardex)
+                .Include(l => l.Precios)
+                .Include(l => l.IdTipoPapelNavigation)
+                .Include(l => l.IdProveedorNavigation)
+                .ToListAsync(); 
+
+            var libros = librosRaw
+                .Select(l => new LibroInventarioDto
+                {
+                    IdLibro = l.IdLibro,
+                    Titulo = l.Titulo,
+                    Isbn = l.Isbn,
+                    Tamanno = l.Tamanno,
+                    Descripcion = l.Descripcion,
+                    Imagen = l.Imagen,
+                    Impresion = l.Impresion,
+                    Condicion = l.Condicion,
+                    Estado = l.Estado ?? false,
+                    Stock = l.Kardex?.Stock ?? 0,
+                    PorcUtilidad = l.Precios.OrderByDescending(p=>p.IdPrecios).FirstOrDefault()?.PorcUtilidad ?? 0,
+                    Precio = l.Precios.OrderByDescending(p => p.IdPrecios).FirstOrDefault()?.PrecioVenta ?? 0,
+                    TipoPapel = l.IdTipoPapelNavigation?.Descripcion ?? "Desconocido",
+                    IdProveedor = l.IdProveedor,
+                    NombreProveedor = l.IdProveedorNavigation?.RazonSocial ?? "Desconocido"
+                })
+                .ToList();
+
 
             return (libros, totalItems);
         }
+
 
 
 

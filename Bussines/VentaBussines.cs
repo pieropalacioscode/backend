@@ -191,9 +191,9 @@ namespace Bussines
                 Vuelto = v.Vuelto
             }).ToList();
         }
-        public async Task<List<VentaResponse>> ObtenerVentasPorFecha(DateTime fechaInicio, DateTime fechaFin)
+        public async Task<List<VentaResponse>> ObtenerVentasPorFecha(DateTime fechaInicio)
         {
-            var ventas = await _IVentaRepository.ObtenerVentasPorFechaAsync(fechaInicio, fechaFin);
+            var ventas = await _IVentaRepository.ObtenerVentasPorFecha(fechaInicio);
 
             return ventas.Select(v => new VentaResponse
             {
@@ -243,5 +243,9 @@ namespace Bussines
             return await _IVentaRepository.GenVentas(page, pageSize);
         }
 
+        public async Task<List<VentaResponse>> getVentasPorComprobante(string NroComprobante)
+        {
+            return await _IVentaRepository.getVentasPorComprobante(NroComprobante);
+        }
     }
 }

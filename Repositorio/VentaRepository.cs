@@ -67,13 +67,14 @@ namespace Repository
 
 
 
-        public async Task<IEnumerable<Venta>> ObtenerVentasPorFecha(DateTime fechaInicio, DateTime fechaFin)
+        public async Task<IEnumerable<Venta>> ObtenerVentasPorFecha(DateTime fecha)
         {
             return await dbSet
                 .AsNoTracking()
-                .Where(v => v.FechaVenta >= fechaInicio && v.FechaVenta <= fechaFin)
+                .Where(v => v.FechaVenta.Date == fecha.Date) // Compara solo el día, mes y año
                 .ToListAsync();
         }
+
         public async Task<IEnumerable<Venta>> ObtenerVentasPorFechaAsync(DateTime fechaInicio, DateTime fechaFin)
         {
             return await dbSet
@@ -246,6 +247,31 @@ namespace Repository
             var resultado = await UtilPaginados.UtilPaginados.CrearPaginadoAsync(query, page, pageSize);
             return resultado;
         }
+
+        public async Task<List<VentaResponse>> getVentasPorComprobante(string NroComprobante)
+        {
+            var ventas = await dbSet
+                .Where(v => v.NroComprobante.Contains(NroComprobante))
+                .ToListAsync();
+
+            var response = ventas.Select(v => new VentaResponse
+            {
+                IdVentas = v.IdVentas,
+                TipoComprobante = v.TipoComprobante,
+                NroComprobante = v.NroComprobante,
+                IdPersona = v.IdPersona,
+                FechaVenta = v.FechaVenta,
+                TotalPrecio = v.TotalPrecio,
+                IdUsuario = v.IdUsuario,
+                IdCaja = v.IdCaja,
+                TipoPago = v.TipoPago,
+                Descuento = v.Descuento,
+                Vuelto = v.Vuelto
+            }).ToList();
+
+            return response;
+        }
+
 
     }
 }

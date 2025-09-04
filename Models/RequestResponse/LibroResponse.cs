@@ -140,6 +140,5 @@ namespace Models.RequestResponse
             public int Stock { get; set; }
         }
 
-
     }
 }

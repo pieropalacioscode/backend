@@ -12,6 +12,7 @@ namespace IRepository
     public interface ICajaRepository : ICRUDRepositorio<Caja>  
     {
         Caja FindCajaByDate(DateTime date);
+        Task<Caja?> GetCajaDeHoy();
         Task<PaginacionResponse<Caja>> GetCaja(int page, int pageSize);
     }
 }

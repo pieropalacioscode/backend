@@ -11,7 +11,7 @@ public partial class Venta
 
     public string? TipoComprobante { get; set; }
 
-    public DateTime? FechaVenta { get; set; }
+    public DateTime FechaVenta { get; set; }
 
     public string? NroComprobante { get; set; }
 

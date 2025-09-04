@@ -402,12 +402,9 @@ namespace Bussines
             return await _ILibroRepository.FiltrarLibrosAsync(estado, titulo,idCategoria,idSubcategoria, page, pageSize);
         }
 
-        public async Task<(List<Libro> Libros, int TotalItems)> FiltrarLibrosProveedorAsync(
-                int? idProveedor,
-                int page,
-                int pageSize)
+        public async Task<(List<LibroInventarioDto> Libros, int TotalItems)> FiltrarLibrosProveedorAsync(int? idProveedor, string? titulo = null, int page = 1, int pageSize = 10)
         {
-            return await _ILibroRepository.FiltrarLibrosProveedorAsync(idProveedor,page,pageSize);
+            return await _ILibroRepository.FiltrarLibrosProveedorAsync(idProveedor,titulo,page,pageSize);
         }
 
         public async Task<bool> CambiarEstadoLibro(int libroId)

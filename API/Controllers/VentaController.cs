@@ -5,6 +5,7 @@ using IBussnies;
 using IService;
 using Microsoft.AspNetCore.Mvc;
 using Models.RequestResponse;
+using System.Globalization;
 using UtilPDF;
 
 namespace API.Controllers
@@ -209,12 +210,14 @@ namespace API.Controllers
 
 
         [HttpGet("resumen-ingresos")]
-        public async Task<IActionResult> GenerarResumenIngresos(DateTime fecha)
+        public async Task<IActionResult> GenerarResumenIngresos(string fecha)
         {
-            var fechaInicio = fecha.Date;
-            var fechaFin = fecha.Date.AddDays(1).AddTicks(-1); // hasta las 23:59:59.9999999
+            if (!DateTime.TryParseExact(fecha, "MM/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var fechaParsed))
+                return BadRequest("Fecha inválida");
 
-            var ventas = await _IVentaBussines.ObtenerVentasPorFecha(fecha,fechaFin);
+            var fechaInicio = fechaParsed.Date;
+
+            var ventas = await _IVentaBussines.ObtenerVentasPorFecha(fechaInicio);
 
             if (!ventas.Any())
                 return NotFound("No hay ventas para la fecha seleccionada.");
@@ -231,10 +234,17 @@ namespace API.Controllers
                 ventas,
                 detallesPorVenta,
                 vendedor: "",
-                fechaReporte: fecha
+                fechaReporte: fechaParsed
             );
 
             return File(pdf, "application/pdf", $"Resumen_Ingresos_{fecha:yyyyMMdd}.pdf");
+        }
+
+        [HttpGet("nroComprobante/{nroComprobante}")]
+        public async Task<IActionResult> getVentasporComprobante(string nroComprobante)
+        {
+            var ventas = await _IVentaBussines.getVentasPorComprobante(nroComprobante);
+            return Ok(ventas);
         }
 
         #endregion

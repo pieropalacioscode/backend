@@ -12,7 +12,7 @@ namespace IBussines
         Task GenerarYEnviarPdfDeVenta(int idVenta, string emailCliente);
         Task<string> GeneraNumeroComprobante(DatalleCarrito datalle);
         Task<string> GenerarNumeroComprobante();
-        Task<List<VentaResponse>> ObtenerVentasPorFecha(DateTime fechaInicio, DateTime fechaFin);
+        Task<List<VentaResponse>> ObtenerVentasPorFecha(DateTime fechaInicio);
         Task<List<VentaResponse>> ObtenerVentasPorFechaAsync(DateTime fechaInicio, DateTime fechaFin);
 
         Task<(List<VentaResponse>, int)> GetVentaPaginados(int page, int pageSize);
@@ -21,5 +21,6 @@ namespace IBussines
         Task<List<IngresoMensualResponse>> ObtenerIngresosPorMes(int mes);
         Task<List<TasaRotacionResponse>> ObtenerTasaRotacionInventario(string filtro, int offset, int limit);
         Task<PaginacionResponse<Venta>> GenVentasPaginados(int page, int pageSize);
+        Task<List<VentaResponse>> getVentasPorComprobante(string NroComprobante);
     }
 }

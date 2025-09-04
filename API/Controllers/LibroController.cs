@@ -304,11 +304,11 @@ namespace API.Controllers
 
 
         [HttpGet("Filtro/Proveedor")]
-        public async Task<IActionResult> FiltrareProveedor([FromQuery] int? idProveedor = null,
+        public async Task<IActionResult> FiltrareProveedor([FromQuery] int? idProveedor = null,string? titulo = null,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10)
         {
-            var (libros, totalItems) = await _ILibroBussines.FiltrarLibrosProveedorAsync(idProveedor, page, pageSize);
+            var (libros, totalItems) = await _ILibroBussines.FiltrarLibrosProveedorAsync(idProveedor,titulo, page, pageSize);
             return Ok(new { libros, totalItems });
         }
 

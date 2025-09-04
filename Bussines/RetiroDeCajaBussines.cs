@@ -138,5 +138,15 @@ namespace Bussines
             List<RetiroDeCajaResponse> res = _Mapper.Map<List<RetiroDeCajaResponse>>(au);
             return res;
         }
+        public Task<decimal> GetTotalRetirosHoy()
+        {
+            return _IRetiroDeCajaRepository.GetTotalRetirosHoy();
+        }
+
+        public async Task<List<RetiroDeCaja>> GetRetirosPorCajaAsync(int idCaja)
+        {
+            var retiros= await _IRetiroDeCajaRepository.GetRetirosPorCajaAsync(idCaja);
+            return retiros;
+        }
     }
 }

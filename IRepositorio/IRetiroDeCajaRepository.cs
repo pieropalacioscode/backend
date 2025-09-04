@@ -10,5 +10,7 @@ namespace IRepository
 {
     public interface IRetiroDeCajaRepository : ICRUDRepositorio<RetiroDeCaja>
     {
+        Task<decimal> GetTotalRetirosHoy();
+        Task<List<RetiroDeCaja>> GetRetirosPorCajaAsync(int idCaja);
     }
 }

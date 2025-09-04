@@ -24,10 +24,7 @@ namespace IRepositorio
             int? idSubcategoria,
             int page,
             int pageSize);
-        Task<(List<Libro> Libros, int TotalItems)> FiltrarLibrosProveedorAsync(
-                int? idProveedor,
-                int page,
-                int pageSize);
+        Task<(List<LibroInventarioDto> Libros, int TotalItems)> FiltrarLibrosProveedorAsync(int? idProveedor, string? titulo = null, int page = 1, int pageSize = 10);
         Task<bool> CambiarEstadoLibro(int libroId);
         Task<PaginacionResponse<Libro>> ListarPorProveedorPaginadoAsync(int idProveedor, int pagina, int cantidad);
 

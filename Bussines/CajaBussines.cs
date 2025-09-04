@@ -3,6 +3,7 @@ using DBModel.DB;
 using IBussines;
 using IRepository;
 using Microsoft.AspNetCore.Mvc;
+using Models.Comon;
 using Models.RequestResponse;
 using Repository;
 using System;
@@ -34,11 +35,23 @@ namespace Bussines
 
         public CajaResponse Create(CajaRequest entity)
         {
-            Caja au = _Mapper.Map<Caja>(entity);
-            au = _ICajaRepository.Create(au);
-            CajaResponse res = _Mapper.Map<CajaResponse>(au);
-            return res;
+            // Validar si ya existe una caja abierta
+            var cajaAbierta = _ICajaRepository
+                .GetAll()
+                .FirstOrDefault(c => c.FechaCierre == null);
+
+            if (cajaAbierta != null)
+            {
+                throw new CustomException("Ya existe una caja abierta. Debe cerrarla antes de crear una nueva.",409);
+            }
+
+            // Si no existe, crear nueva caja
+            Caja nuevaCaja = _Mapper.Map<Caja>(entity);
+            nuevaCaja = _ICajaRepository.Create(nuevaCaja);
+
+            return _Mapper.Map<CajaResponse>(nuevaCaja);
         }
+
 
         public List<CajaResponse> CreateMultiple(List<CajaRequest> request)
         {
@@ -129,6 +142,9 @@ namespace Bussines
             return await _ICajaRepository.GetCaja(page, pageSize);
         }
 
-
+        public async Task<Caja?> getCajaHoy()
+        {
+            return await _ICajaRepository.GetCajaDeHoy();
+        }
     }
 }

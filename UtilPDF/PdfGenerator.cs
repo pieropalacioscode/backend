@@ -108,7 +108,7 @@ namespace UtilPDF
             {
                 case "BOLETA":
                     tituloComprobante = "Boleta de Venta Electrónica";
-                    prefijoComprobante = "B";
+                    prefijoComprobante = "B-";
                     break;
                 case "FACTURA":
                     tituloComprobante = "Factura Electrónica";
@@ -116,11 +116,11 @@ namespace UtilPDF
                     break;
                 case "NOTA":
                     tituloComprobante = "Nota de Venta";
-                    prefijoComprobante = "N";
+                    prefijoComprobante = "N-";
                     break;
                 default:
                     tituloComprobante = "Comprobante";
-                    prefijoComprobante = "C";
+                    prefijoComprobante = "C-";
                     break;
             }
 
@@ -133,7 +133,7 @@ namespace UtilPDF
             currentY += 20;
 
             // Información de emisión y cliente - formato mejorado
-            string fechaEmision = venta.FechaVenta?.ToString("yyyy-MM-dd") ?? DateTime.Now.ToString("yyyy-MM-dd");
+            string fechaEmision = venta.FechaVenta.ToString("yyyy-MM-dd") ?? DateTime.Now.ToString("yyyy-MM-dd");
             string horaEmision = DateTime.Now.ToString("HH:mm:ss");
 
             gfx.DrawString($"F. Emisión:", normalFont, XBrushes.Black, new XPoint(marginLeft, currentY));
@@ -299,25 +299,27 @@ namespace UtilPDF
 
             // Mostrar subtotal de DB
             gfx.DrawString($"Subtotal: S/", normalFont, XBrushes.Black, new XPoint(marginLeft, currentY));
-            gfx.DrawString($"{subtotalVenta:F2}", normalFont, XBrushes.Black, new XPoint(totalStartX, currentY));
+            gfx.DrawString($"{subtotalVenta + descuentoVenta:F2}", normalFont, XBrushes.Black, new XPoint(totalStartX, currentY));
+            currentY += 10;
+            gfx.DrawString($"Descuento Venta: S/", normalFont, XBrushes.Red, new XPoint(marginLeft, currentY));
+            gfx.DrawString($"-{venta.Descuento:F2}", normalFont, XBrushes.Red, new XPoint(totalStartX, currentY));
             currentY += 10;
 
-            // Mostrar total de descuentos (si hay)
-            if (totalDescuentos > 0)
-            {
-                gfx.DrawString($"Total descuentos: S/", normalFont, XBrushes.Red, new XPoint(marginLeft, currentY));
-                gfx.DrawString($"-{totalDescuentos:F2}", normalFont, XBrushes.Red, new XPoint(totalStartX, currentY));
-                currentY += 10;
-            }
 
             gfx.DrawString($"Op. Exoneradas: S/", normalFont, XBrushes.Black, new XPoint(marginLeft, currentY));
             gfx.DrawString($"{totalVenta:F2}", normalFont, XBrushes.Black, new XPoint(totalStartX, currentY));
             currentY += 10;
 
             gfx.DrawString("IGV: S/", normalFont, XBrushes.Black, new XPoint(marginLeft, currentY));
-            gfx.DrawString("0.00", normalFont, XBrushes.Black, new XPoint(totalStartX, currentY));
+            gfx.DrawString($"{totalVenta*0.18m:F2}", normalFont, XBrushes.Black, new XPoint(totalStartX, currentY));
             currentY += 10;
-
+            // Mostrar total de descuentos (si hay)
+            if (totalDescuentos > 0)
+            {
+                gfx.DrawString($"Total descuentos: S/", normalFont, XBrushes.Red, new XPoint(marginLeft, currentY));
+                gfx.DrawString($"-{totalDescuentos + venta.Descuento:F2}", normalFont, XBrushes.Red, new XPoint(totalStartX, currentY));
+                currentY += 10;
+            }
             gfx.DrawString($"Total a pagar: S/", headerFont, XBrushes.Black, new XPoint(marginLeft, currentY));
             gfx.DrawString($"{totalVenta:F2}", headerFont, XBrushes.Black, new XPoint(totalStartX, currentY));
             currentY += 15;

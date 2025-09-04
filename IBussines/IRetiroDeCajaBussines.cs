@@ -12,5 +12,7 @@ namespace IBussines
     public interface IRetiroDeCajaBussines : ICRUDBussnies<RetiroDeCajaRequest,RetiroDeCajaResponse>
     {
         RetiroDeCajaResponse CrearRetiro(RetiroDeCajaRequest request);
+        Task<decimal> GetTotalRetirosHoy();
+        Task<List<RetiroDeCaja>> GetRetirosPorCajaAsync(int idCaja);
     }
 }

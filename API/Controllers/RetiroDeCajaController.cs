@@ -110,7 +110,19 @@ namespace API.Controllers
             }
         }
 
+        [HttpGet("retiros")]
+        public async Task<IActionResult> getRetiros()
+        {
+            var retiros = await _IRetiroDeCajaBussines.GetTotalRetirosHoy();
+            return Ok(retiros);
+        }
 
+        [HttpGet("retiro/{idCaja}")]
+        public async Task<IActionResult> getRetirosPoridCaja(int idCaja)
+        {
+            var retiros= await _IRetiroDeCajaBussines.GetRetirosPorCajaAsync(idCaja);
+            return Ok(retiros);
+        }
         #endregion
     }
 }

@@ -22,11 +22,16 @@ namespace Repository
 
 
         // Método para obtener todas las Cajas con fecha de hoy
-        public List<Caja> GetCajasDeHoy()
+        public async Task<Caja?> GetCajaDeHoy()
         {
             var today = DateTime.Today;
-            var cajasDeHoy = dbSet.Where(c => c.Fecha.HasValue && c.Fecha.Value.Date == today).ToList();
-            return cajasDeHoy;
+
+            // Devuelve la primera caja de hoy o null si no existe
+            var cajaDeHoy = await dbSet
+                .Where(c => c.Fecha.HasValue && c.Fecha.Value.Date == today)
+                .FirstOrDefaultAsync();
+
+            return cajaDeHoy;
         }
 
 
@@ -39,8 +44,9 @@ namespace Repository
         public async Task<PaginacionResponse<Caja>> GetCaja(int page, int pageSize)
         {
             var query = dbSet.AsQueryable();
-            return await UtilPaginados.UtilPaginados.CrearPaginadoAsync(query, page, pageSize);
+            return await UtilPaginados.UtilPaginados.CrearPaginadoAsyncCaja(query, page, pageSize);
         }
+
 
     }
 }

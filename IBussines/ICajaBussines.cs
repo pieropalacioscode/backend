@@ -15,5 +15,6 @@ namespace IBussines
     {
         Caja RegistrarVentaEnCajaDelDia();
         Task<PaginacionResponse<Caja>> GetCaja(int page, int pageSize);
+        Task<Caja?> getCajaHoy();
     }
 }

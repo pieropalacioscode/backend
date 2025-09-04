@@ -139,7 +139,7 @@ namespace Repository
             var query = dbSet
                 .Include(dv => dv.IdVentasNavigation) // Incluimos la navegación hacia Venta
                 .Where(dv => dv.IdLibro == idLibro && dv.IdVentasNavigation.FechaVenta != null)
-                .GroupBy(dv => dv.IdVentasNavigation.FechaVenta.Value.Date)
+                .GroupBy(dv => dv.IdVentasNavigation.FechaVenta.Date)
                 .Select(g => new VentaHistoricaDto
                 {
                     Fecha = g.Key,

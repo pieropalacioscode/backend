@@ -104,6 +104,13 @@ namespace API.Controllers
             var paginacion = await _ICajaBussines.GetCaja(page, pageSize);
             return Ok(paginacion);
         }
+
+        [HttpGet("cajaHoy")]
+        public async Task<IActionResult> getCajaHoy()
+        {
+            var cajas = await _ICajaBussines.getCajaHoy();
+            return Ok(cajas);
+        }
         #endregion
     }
 }
