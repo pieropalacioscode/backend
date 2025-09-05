@@ -18,5 +18,6 @@ namespace IRepository
         Task<PaginacionResponse<PedidoDetalleResponse>> GetPedidosConDetallesPaginado(string estado, int pagina, int cantidad);
         Task<ContadorEstadosPedidoResponse> getcanEstado();
         Task<List<PedidoDetalleResponse>> GetPedidosConDetallesPorFechaYProveedor(DateTime fecha, int idProveedor);
+        Task<List<FechaPedidoProveedor>> GetFechasPedido();
     }
 }

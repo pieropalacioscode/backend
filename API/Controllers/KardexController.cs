@@ -88,6 +88,20 @@ namespace API.Controllers
             return Ok(res);
         }
 
+
+        [HttpPut("actualizar-stock/{IdLibro}")]
+        public async Task<IActionResult> ActualizarStock([FromBody] KardexStockUpdateRequest request)
+        {
+            if (request == null || request.IdLibro <= 0)
+                return BadRequest("Datos inválidos");
+
+            var actualizado = await _IKardexBussines.ActualizarStockPorLibroAsync(request.IdLibro, request.Stock);
+
+            if (!actualizado)
+                return NotFound($"No existe un Kardex para el libro con ID {request.IdLibro}");
+
+            return Ok(new { success = true, message = "✅ Stock actualizado correctamente" });
+        }
         #endregion
 
     }

@@ -11,10 +11,10 @@ using UtilPaginados;
 
 namespace IBussines
 {
-    public interface IPedidoProveedorBussines : ICRUDBussnies<PedidoProveedorRequest,PedidoProveedorResponse>
+    public interface IPedidoProveedorBussines : ICRUDBussnies<PedidoProveedorRequest, PedidoProveedorResponse>
     {
         Task<string> CrearPedidoConDetalles(PedidoProveedorConDetalleRequest request);
-        Task<string> ConfirmarRecepcionConImagen(int idPedido,int idSucursal,string? descripcionRecepcion,List<DetallePedidoProveedorRequest> detalles,List<IFormFile> imagenes,string estado);
+        Task<string> ConfirmarRecepcionConImagen(int idPedido, int idSucursal, string? descripcionRecepcion, List<DetallePedidoProveedorRequest> detalles, List<IFormFile> imagenes, string estado);
         Task<List<PedidoProveedorResponse>> getPorEstado(string estado);
         Task<PedidoDetalleResponse?> getPedidoconDetalle(int id);
         Task<PaginacionResponse<PedidoDetalleResponse>> GetPedidosPorFechaPaginado(DateTime fecha, int pagina, int cantidad);
@@ -25,5 +25,6 @@ namespace IBussines
         Task<byte[]> GenerarPdfPedidosPorFecha(DateTime fecha, int idProveedor);
         Task<string> GenerarYSubirPdfTemporal(DateTime fecha, int idProveedor);
         IFormFile ConvertirBase64AFormFile(string base64String);
+        Task<List<FechaPedidoProveedor>> GetFechasPedido();
     }
 }

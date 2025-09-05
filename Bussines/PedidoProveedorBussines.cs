@@ -287,5 +287,11 @@ namespace Bussines
             return url;
         }
 
+        public async Task<List<FechaPedidoProveedor>> GetFechasPedido()
+        {
+            var fechas = await _IPedidoProveedorRepository.GetFechasPedido();
+            return fechas;
+        }
+
     }
 }

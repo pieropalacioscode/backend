@@ -1,4 +1,5 @@
 ﻿using DBModel.DB;
+using DocumentFormat.OpenXml.InkML;
 using IRepository;
 using Microsoft.EntityFrameworkCore;
 using Repository.Generic;
@@ -66,6 +67,22 @@ namespace Repository
         public async Task<Kardex> GetByIdAsync(int id)
         {
             return await dbSet.FirstOrDefaultAsync(k => k.IdLibro == id);
+        }
+
+        public async Task<bool> ActualizarStockPorLibroAsync(int idLibro, int nuevoStock)
+        {
+            var kardex = await dbSet.FirstOrDefaultAsync(k => k.IdLibro == idLibro);
+
+            if (kardex == null)
+            {
+                return false; // no existe kardex para ese libro
+            }
+
+            kardex.Stock = nuevoStock;
+            dbSet.Update(kardex);
+            await db.SaveChangesAsync();
+
+            return true;
         }
 
     }

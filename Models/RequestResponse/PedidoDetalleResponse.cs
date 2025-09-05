@@ -33,4 +33,11 @@ namespace Models.RequestResponse
         public decimal PrecioUnitario { get; set; }
         public string? Lote { get; set; }
     }
+
+    public class FechaPedidoProveedor
+    {
+        public int IdProveedor { get; set; }
+        public string? RazonSocial { get; set; }
+        public DateTime? Fecha { get; set; }
+    }
 }

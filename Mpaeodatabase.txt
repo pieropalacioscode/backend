@@ -11,4 +11,6 @@ Scaffold-DbContext "Data Source=DESKTOP-CVPFOKO;Initial Catalog=Libreria_Saber;I
 Scaffold-DbContext "Data Source=DESKTOP-OALSKTM\SQLEXPRESS;Initial Catalog=LibreriaSA;Integrated Security=True;Encrypt=True;Trust Server Certificate=True" Microsoft.EntityFrameworkCore.SqlServer -OutPutDir DB -Force
 
 
+//database nube
+Data Source=SQL9001.site4now.net;Initial Catalog=db_abde77_libreriasa;User Id=db_abde77_libreriasa_admin;Password=L123456789
 

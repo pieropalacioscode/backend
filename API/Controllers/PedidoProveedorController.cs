@@ -259,6 +259,13 @@ namespace API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpGet("fechas")]
+        public async Task<IActionResult> getFechasPedidos()
+        {
+            var fechas = await _IPedidoProveedorBussines.GetFechasPedido();
+            return Ok(fechas);
+        }
         #endregion
     }
 }

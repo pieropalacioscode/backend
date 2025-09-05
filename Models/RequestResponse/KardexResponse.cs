@@ -20,4 +20,10 @@ namespace Models.RequestResponse
 
         public decimal? UltPrecioCosto { get; set; }
     }
+
+    public class KardexStockUpdateRequest
+    {
+        public int IdLibro { get; set; }
+        public int Stock { get; set; }
+    }
 }

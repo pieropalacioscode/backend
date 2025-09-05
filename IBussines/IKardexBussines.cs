@@ -10,5 +10,6 @@ namespace IBussines
 {
     public interface IKardexBussines: ICRUDBussnies<KardexRequest, KardexResponse>
     {
+        Task<bool> ActualizarStockPorLibroAsync(int idLibro, int nuevoStock);
     }
 }

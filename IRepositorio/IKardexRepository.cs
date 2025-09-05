@@ -13,5 +13,6 @@ namespace IRepository
         void RegistrarEntradaKardex(int idLibro, int idSucursal, int cantidad, decimal precioUnitario);
         List<Kardex> GetLibrosConStock();
         Task<Kardex> GetByIdAsync(int id);
+        Task<bool> ActualizarStockPorLibroAsync(int idLibro, int nuevoStock);
     }
 }

@@ -100,6 +100,10 @@ namespace Bussines
             return res;
         }
 
+        public async Task<bool> ActualizarStockPorLibroAsync(int idLibro, int nuevoStock)
+        {
+            return await _IKardexRepository.ActualizarStockPorLibroAsync(idLibro, nuevoStock);
+        }
 
     }
 }

@@ -196,6 +196,22 @@ namespace Repository
         }
 
 
+        public async Task<List<FechaPedidoProveedor>> GetFechasPedido()
+        {
+            var fechas = await dbSet
+                .Include(p => p.IdProveedorNavigation) // traemos proveedor
+                .Select(p => new FechaPedidoProveedor
+                {
+                    Fecha = p.Fecha,
+                    IdProveedor = p.IdProveedor,
+                    RazonSocial = p.IdProveedorNavigation.RazonSocial
+                })
+                .ToListAsync();
+
+            return fechas;
+        }
+
+
 
     }
 }
